@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ обитаемости экзопланет</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <header>
+            <h1>Интеллектуальная система анализа обитаемости экзопланет</h1>
+            <p>Сравнительный анализ и выявление потенциально обитаемых экзопланет</p>
+        </header>
+
+        <main>
+            <section class="search-section">
+                <h2>Анализ новой экзопланеты</h2>
+                <div class="form-container">
+                    <div class="input-group">
+                        <label for="planet-name">Название экзопланеты</label>
+                        <input type="text" id="planet-name" placeholder="Введите название экзопланеты">
+                    </div>
+                    <div class="input-group">
+                        <label for="planet-radius">Радиус (относительно Земли)</label>
+                        <input type="number" id="planet-radius" step="0.01" placeholder="Например: 1.2">
+                    </div>
+                    <div class="input-group">
+                        <label for="planet-temp">Температура (К)</label>
+                        <input type="number" id="planet-temp" placeholder="Например: 288">
+                    </div>
+                    <div class="input-group">
+                        <label for="planet-density">Плотность (г/см³)</label>
+                        <input type="number" id="planet-density" step="0.01" placeholder="Например: 5.51">
+                    </div>
+                    <button id="analyze-btn" class="glow-btn">Анализировать <i class="fas fa-search"></i></button>
+                </div>
+            </section>
+
+            <section class="results-section hidden" id="results-section">
+                <h2>Результаты анализа</h2>
+                <div class="results-container">
+                    <div class="planet-card">
+                        <div class="planet-visual">
+                            <div class="planet" id="planet-visualization"></div>
+                        </div>
+                        <div class="planet-info">
+                            <h3 id="result-name">Название планеты</h3>
+                            <p>Индекс обитаемости: <span id="habitability-index">0</span>/100</p>
+                            <div class="progress-bar">
+                                <div class="progress" id="habitability-progress"></div>
+                            </div>
+                            <div class="planet-details">
+                                <p>Радиус: <span id="result-radius">0</span> R⊕</p>
+                                <p>Температура: <span id="result-temp">0</span> K</p>
+                                <p>Плотность: <span id="result-density">0</span> г/см³</p>
+                            </div>
+                            <div class="assessment">
+                                <h4>Заключение:</h4>
+                                <p id="result-assessment">Ожидание анализа...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="similar-planets">
+                        <h3>Похожие экзопланеты из базы данных</h3>
+                        <div id="similar-planets-list" class="planets-list">
+                            <!-- Здесь будут динамически добавляться похожие планеты -->
+                        </div>
+                    </div>
+                </div>
+                <button id="save-btn" class="glow-btn">Сохранить результаты <i class="fas fa-save"></i></button>
+            </section>
+
+            <section class="database-section">
+                <h2>База данных экзопланет</h2>
+                <div class="database-controls">
+                    <div class="search-bar">
+                        <input type="text" id="db-search" placeholder="Поиск по названию...">
+                        <button id="db-search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="filter-options">
+                        <select id="filter-type">
+                            <option value="all">Все типы</option>
+                            <option value="habitable">Потенциально обитаемые</option>
+                            <option value="non-habitable">Необитаемые</option>
+                        </select>
+                        <button id="sort-btn" data-sort="name"><i class="fas fa-sort"></i> Сортировка</button>
+                    </div>
+                </div>
+                <div class="database-container" id="planets-database">
+                    <!-- Здесь будут динамически загружаться данные из датасета -->
+                    <div id="exoplanets-list"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Дипломная работа "Интеллектуальная система по выявлению потенциально обитаемых экзопланет" &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
