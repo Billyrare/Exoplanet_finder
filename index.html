@@ -6,6 +6,8 @@
     <title>Анализ обитаемости экзопланет</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Plotly зависимости -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="stars"></div>
@@ -70,6 +72,35 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="visualization-container">
+                    <h3>Детальный анализ</h3>
+                    <div class="chart-card full-width primary-chart">
+                        <div id="esi-gauge" class="chart-container"></div>
+                    </div>
+                    
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div id="earth-comparison-chart" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div id="atmosphere-chart" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div id="water-indicator" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div id="life-sustainability-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="advanced-charts-grid">
+                        <div class="chart-card full-width">
+                            <div id="planets-distribution" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <button id="save-btn" class="glow-btn">Сохранить результаты <i class="fas fa-save"></i></button>
             </section>
 

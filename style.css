@@ -516,3 +516,100 @@ footer {
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+/* Добавление стилей для графиков */
+.visualization-container {
+    margin-top: 2rem;
+    background-color: rgba(10, 10, 35, 0.8);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.visualization-container h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #4fc3f7;
+    font-size: 1.6rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.advanced-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background-color: rgba(15, 15, 40, 0.7);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+}
+
+/* Новые стили для ESI-индикатора и других улучшений */
+.primary-chart {
+    margin-bottom: 1.5rem;
+    background-color: rgba(25, 25, 50, 0.8);
+    padding: 1.5rem;
+    border: 1px solid rgba(79, 195, 247, 0.3);
+}
+
+.primary-chart .chart-container {
+    min-height: 280px;
+}
+
+/* Увеличение отступов для радарной диаграммы, чтобы текст не перекрывался */
+#earth-comparison-chart {
+    padding: 20px;
+}
+
+/* Высота для графиков разной сложности */
+#atmosphere-chart, #earth-comparison-chart {
+    min-height: 320px;
+}
+
+#water-indicator, #life-sustainability-chart {
+    min-height: 300px;
+}
+
+#planets-distribution {
+    min-height: 400px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+    }
+    
+    #planets-distribution {
+        min-height: 350px;
+    }
+}
