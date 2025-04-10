@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
 import numpy as np
 import json
@@ -6,6 +6,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestClassifier
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import io
+import base64
+from matplotlib.colors import LinearSegmentedColormap
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -167,6 +174,10 @@ knn_model, rf_model, scaler_esi = prepare_models(confirmed_exoplanets, habitable
 def index():
     return app.send_static_file('index.html')
 
+@app.route('/visualization')
+def visualization():
+    return app.send_static_file('visualization.html')
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze_planet():
     data = request.json
@@ -247,6 +258,397 @@ def get_habitable_worlds():
     # Возвращаем данные из каталога потенциально обитаемых миров
     habitable_list = habitable_worlds.to_dict(orient='records')
     return jsonify(habitable_list)
+
+# API-эндпоинты для визуализации данных
+
+@app.route('/api/visualization/parameter-distribution', methods=['GET'])
+def get_parameter_distribution():
+    """
+    Возвращает данные для построения графиков распределения параметров экзопланет:
+    - Распределение по радиусу
+    - Распределение по температуре
+    - Распределение по плотности
+    - Распределение по индексу обитаемости
+    """
+    # Получаем данные из датасетов
+    confirmed_data = []
+    for _, planet in confirmed_exoplanets.iterrows():
+        if not pd.isna(planet['pl_name']) and not pd.isna(planet['pl_radius_earth']) and not pd.isna(planet['pl_eqt']):
+            radius = planet['pl_radius_earth']
+            temp = planet['pl_eqt']
+            
+            # Вычисляем примерную плотность на основе радиуса
+            if radius < 1.5:  # Скалистые планеты
+                density = 5.0
+            elif radius < 3:  # Суперземли/мининептуны
+                density = 3.0
+            else:  # Газовые гиганты
+                density = 1.0
+            
+            # Расчет индекса обитаемости
+            habitability_score = calculate_habitability_score(radius, temp, density)
+            
+            confirmed_data.append({
+                'name': planet['pl_name'],
+                'radius': radius,
+                'temperature': temp,
+                'density': density,
+                'habitability': habitability_score,
+                'dataset': 'NASA Confirmed'
+            })
+    
+    habitable_data = []
+    for _, planet in habitable_worlds.iterrows():
+        if not pd.isna(planet['name']) and not pd.isna(planet['radius_re']) and not pd.isna(planet['tsurf_k']):
+            radius = planet['radius_re']
+            temp = planet['tsurf_k']
+            density = 5.0  # Примерная плотность для потенциально обитаемых миров
+            
+            # Используем ESI как основу для оценки обитаемости
+            if not pd.isna(planet['esi']):
+                habitability_score = int(planet['esi'] * 100)
+            else:
+                habitability_score = calculate_habitability_score(radius, temp, density)
+                
+            habitable_data.append({
+                'name': planet['name'],
+                'radius': radius,
+                'temperature': temp,
+                'density': density,
+                'habitability': habitability_score,
+                'dataset': 'Habitable Worlds Catalog'
+            })
+    
+    # Объединяем данные
+    all_data = confirmed_data + habitable_data
+    
+    # Формируем статистические данные для каждого параметра
+    stats = {
+        'radius': {
+            'min': min([p['radius'] for p in all_data]),
+            'max': max([p['radius'] for p in all_data]),
+            'mean': sum([p['radius'] for p in all_data]) / len(all_data),
+            'earth_value': 1.0
+        },
+        'temperature': {
+            'min': min([p['temperature'] for p in all_data]),
+            'max': max([p['temperature'] for p in all_data]),
+            'mean': sum([p['temperature'] for p in all_data]) / len(all_data),
+            'earth_value': 288
+        },
+        'density': {
+            'min': min([p['density'] for p in all_data]),
+            'max': max([p['density'] for p in all_data]),
+            'mean': sum([p['density'] for p in all_data]) / len(all_data),
+            'earth_value': 5.51
+        },
+        'habitability': {
+            'min': min([p['habitability'] for p in all_data]),
+            'max': max([p['habitability'] for p in all_data]),
+            'mean': sum([p['habitability'] for p in all_data]) / len(all_data),
+            'earth_value': 100
+        }
+    }
+    
+    # Формируем бины для гистограмм
+    bins = {
+        'radius': np.histogram([p['radius'] for p in all_data], bins=20),
+        'temperature': np.histogram([p['temperature'] for p in all_data], bins=20),
+        'density': np.histogram([p['density'] for p in all_data], bins=20),
+        'habitability': np.histogram([p['habitability'] for p in all_data], bins=20)
+    }
+    
+    # Преобразуем bins в JSON-совместимый формат
+    histogram_data = {}
+    for param, (counts, bin_edges) in bins.items():
+        histogram_data[param] = {
+            'counts': counts.tolist(),
+            'bin_edges': bin_edges.tolist()
+        }
+    
+    return jsonify({
+        'parameters': ['radius', 'temperature', 'density', 'habitability'],
+        'all_data': all_data,
+        'stats': stats,
+        'histogram_data': histogram_data
+    })
+
+@app.route('/api/visualization/exoplanet-comparison-map', methods=['GET'])
+def get_exoplanet_comparison_map():
+    """
+    Возвращает данные для построения карты сравнения экзопланет.
+    Использует t-SNE или PCA для снижения размерности и визуализации экзопланет в 2D-пространстве.
+    """
+    # Собираем данные для визуализации
+    planet_data = []
+    
+    # Из подтвержденных экзопланет
+    for _, planet in confirmed_exoplanets.iterrows():
+        if not pd.isna(planet['pl_name']) and not pd.isna(planet['pl_radius_earth']) and not pd.isna(planet['pl_eqt']):
+            radius = planet['pl_radius_earth']
+            temp = planet['pl_eqt']
+            
+            # Вычисляем примерную плотность
+            if radius < 1.5:  # Скалистые планеты
+                density = 5.0
+            elif radius < 3:  # Суперземли/мининептуны
+                density = 3.0
+            else:  # Газовые гиганты
+                density = 1.0
+            
+            # Вычисляем примерную массу
+            earth_density = 5.51
+            mass = (density / earth_density) * (radius ** 3)
+            
+            # Расчет индекса обитаемости
+            habitability_score = calculate_habitability_score(radius, temp, density)
+            
+            planet_data.append({
+                'name': planet['pl_name'],
+                'radius': radius,
+                'temperature': temp,
+                'density': density,
+                'mass': mass,
+                'habitability': habitability_score,
+                'dataset': 'NASA Confirmed'
+            })
+    
+    # Из каталога потенциально обитаемых миров
+    for _, planet in habitable_worlds.iterrows():
+        if not pd.isna(planet['name']) and not pd.isna(planet['radius_re']) and not pd.isna(planet['tsurf_k']):
+            radius = planet['radius_re']
+            temp = planet['tsurf_k']
+            density = 5.0
+            
+            # Вычисляем примерную массу
+            earth_density = 5.51
+            mass = (density / earth_density) * (radius ** 3)
+            
+            # Используем ESI как основу для оценки обитаемости
+            if not pd.isna(planet['esi']):
+                habitability_score = int(planet['esi'] * 100)
+            else:
+                habitability_score = calculate_habitability_score(radius, temp, density)
+                
+            planet_data.append({
+                'name': planet['name'],
+                'radius': radius,
+                'temperature': temp,
+                'density': density,
+                'mass': mass,
+                'habitability': habitability_score,
+                'dataset': 'Habitable Worlds Catalog'
+            })
+    
+    # Добавляем Землю для сравнения
+    planet_data.append({
+        'name': 'Земля',
+        'radius': 1.0,
+        'temperature': 288,
+        'density': 5.51,
+        'mass': 1.0,
+        'habitability': 100,
+        'dataset': 'Солнечная система'
+    })
+    
+    # Создаем DataFrame для снижения размерности
+    df = pd.DataFrame(planet_data)
+    
+    # Выбираем числовые признаки для анализа
+    features = df[['radius', 'temperature', 'density', 'mass', 'habitability']].values
+    
+    # Нормализация данных
+    scaler = StandardScaler()
+    features_scaled = scaler.fit_transform(features)
+    
+    # Снижение размерности с помощью PCA
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(features_scaled)
+    
+    # Добавляем результаты PCA в исходные данные
+    for i, planet in enumerate(planet_data):
+        planet['x'] = float(pca_result[i, 0])
+        planet['y'] = float(pca_result[i, 1])
+    
+    # Добавляем цветовую шкалу для обитаемости
+    habitability_colors = []
+    for planet in planet_data:
+        score = planet['habitability']
+        if score >= 80:
+            color = "#00FF00"  # Зеленый - высокая обитаемость
+        elif score >= 60:
+            color = "#ADFF2F"  # Желто-зеленый - средняя обитаемость
+        elif score >= 40:
+            color = "#FFFF00"  # Желтый - низкая обитаемость
+        elif score >= 20:
+            color = "#FFA500"  # Оранжевый - очень низкая обитаемость
+        else:
+            color = "#FF0000"  # Красный - непригодна для жизни
+        
+        planet['color'] = color
+        habitability_colors.append(color)
+    
+    return jsonify({
+        'planets': planet_data,
+        'explained_variance': pca.explained_variance_ratio_.tolist(),
+        'earth_coordinates': next((p for p in planet_data if p['name'] == 'Земля'), None)
+    })
+
+@app.route('/api/planet/compare', methods=['POST'])
+def compare_planet_with_known():
+    """
+    Сравнивает заданную планету с известными экзопланетами и возвращает данные для визуализации.
+    """
+    data = request.json
+    
+    # Получение данных из запроса
+    name = data.get('name', 'Пользовательская планета')
+    radius_earth = float(data.get('radius', 0))
+    temperature_k = float(data.get('temperature', 0))
+    density_g_cm3 = float(data.get('density', 0))
+    
+    # Создаем данные для сравнения
+    user_planet = {
+        'name': name,
+        'radius': radius_earth,
+        'temperature': temperature_k,
+        'density': density_g_cm3,
+        'habitability': calculate_habitability_score(radius_earth, temperature_k, density_g_cm3),
+        'is_user_planet': True
+    }
+    
+    # Находим похожие планеты
+    similar_planets = find_similar_planets(radius_earth, temperature_k, density_g_cm3, 
+                                         confirmed_exoplanets, habitable_worlds)
+    
+    # Добавляем Землю для сравнения
+    earth = {
+        'name': 'Земля',
+        'radius': 1.0,
+        'temperature': 288,
+        'density': 5.51,
+        'habitability': 100,
+        'similarity_percentage': calculate_similarity_to_earth(radius_earth, temperature_k, density_g_cm3),
+        'is_reference': True
+    }
+    
+    # Формируем данные для лепестковой диаграммы (radar chart)
+    radar_data = {
+        'labels': ['Радиус', 'Температура', 'Плотность', 'Обитаемость'],
+        'datasets': [
+            {
+                'label': user_planet['name'],
+                'data': normalized_radar_values(user_planet),
+                'is_user_planet': True
+            },
+            {
+                'label': 'Земля',
+                'data': normalized_radar_values(earth),
+                'is_reference': True
+            }
+        ]
+    }
+    
+    # Добавляем до 3 похожих планет в набор данных для диаграммы
+    for idx, planet in enumerate(similar_planets[:3]):
+        radar_data['datasets'].append({
+            'label': planet['name'],
+            'data': normalized_radar_values({
+                'radius': planet['radius'],
+                'temperature': planet['temperature'],
+                'density': 5.0 if 'density' not in planet else planet['density'],
+                'habitability': calculate_habitability_score(
+                    planet['radius'], 
+                    planet['temperature'], 
+                    5.0 if 'density' not in planet else planet['density']
+                )
+            }),
+            'similarity_percentage': planet['similarity_percentage']
+        })
+    
+    # Формируем данные для гистограммы сравнения
+    bar_data = {
+        'labels': ['Радиус', 'Температура', 'Плотность', 'Обитаемость'],
+        'datasets': [
+            {
+                'label': user_planet['name'],
+                'data': [
+                    user_planet['radius'],
+                    user_planet['temperature'],
+                    user_planet['density'],
+                    user_planet['habitability']
+                ]
+            },
+            {
+                'label': 'Земля',
+                'data': [1.0, 288, 5.51, 100]
+            }
+        ]
+    }
+    
+    return jsonify({
+        'user_planet': user_planet,
+        'earth': earth,
+        'similar_planets': similar_planets,
+        'radar_data': radar_data,
+        'bar_data': bar_data
+    })
+
+# Вспомогательные функции для визуализации
+
+def normalized_radar_values(planet):
+    """
+    Нормализует значения параметров планеты для лепестковой диаграммы.
+    Все значения приводятся к шкале от 0 до 1, где 1 - идеальное значение (как у Земли).
+    """
+    # Идеальные значения (Земля)
+    ideal_radius = 1.0
+    ideal_temp = 288
+    ideal_density = 5.51
+    
+    # Диапазоны для нормализации
+    radius_range = 2.0    # ±2 радиуса Земли
+    temp_range = 100      # ±100K от земной температуры
+    density_range = 3.0   # ±3 г/см³ от плотности Земли
+    
+    # Нормализация значений
+    norm_radius = max(0, 1 - abs(planet['radius'] - ideal_radius) / radius_range)
+    norm_temp = max(0, 1 - abs(planet['temperature'] - ideal_temp) / temp_range)
+    norm_density = max(0, 1 - abs(planet['density'] - ideal_density) / density_range)
+    norm_habitability = planet['habitability'] / 100  # Индекс обитаемости уже в шкале 0-100
+    
+    return [norm_radius, norm_temp, norm_density, norm_habitability]
+
+def calculate_similarity_to_earth(radius, temperature, density):
+    """
+    Рассчитывает процент сходства планеты с Землей на основе ее параметров.
+    """
+    # Идеальные значения (Земля)
+    ideal_radius = 1.0
+    ideal_temp = 288
+    ideal_density = 5.51
+    
+    # Весовые коэффициенты
+    radius_weight = 0.3
+    temp_weight = 0.4
+    density_weight = 0.3
+    
+    # Расчет отклонений
+    r_diff = abs(radius - ideal_radius) / ideal_radius if ideal_radius > 0 else 1
+    t_diff = abs(temperature - ideal_temp) / ideal_temp if ideal_temp > 0 else 1
+    d_diff = abs(density - ideal_density) / ideal_density if ideal_density > 0 else 1
+    
+    # Взвешенное отклонение
+    weighted_diff = (
+        r_diff * radius_weight + 
+        t_diff * temp_weight + 
+        d_diff * density_weight
+    )
+    
+    # Конвертация в процент сходства (0-100%)
+    similarity = max(0, 100 - weighted_diff * 100)
+    
+    return min(round(similarity, 2), 99.99)  # Ограничиваем максимальное сходство
 
 # Вспомогательные функции
 def find_similar_planets(radius, temperature, density, confirmed_df, habitable_df):

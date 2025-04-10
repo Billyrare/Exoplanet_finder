@@ -6,6 +6,8 @@
     <title>Анализ обитаемости экзопланет</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Plotly зависимости -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="stars"></div>
@@ -70,6 +72,42 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Добавляем секцию с графиками после анализа -->
+                <div class="analysis-charts">
+                    <h3>Визуализация данных</h3>
+                    <div class="charts-grid">
+                        <div class="chart-box">
+                            <h4>Сравнение с Землей</h4>
+                            <div id="radar-chart" class="chart"></div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Положение на карте экзопланет</h4>
+                            <div id="exoplanet-map" class="chart"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Добавляем другие типы графиков для более подробного анализа -->
+                    <div class="charts-grid" style="margin-top: 20px;">
+                        <div class="chart-box">
+                            <h4>Распределение параметров экзопланет</h4>
+                            <div id="distribution-chart" class="chart"></div>
+                            <div class="chart-controls">
+                                <select id="parameter-select" style="padding: 5px; margin-top: 10px;">
+                                    <option value="radius">Радиус</option>
+                                    <option value="temperature">Температура</option>
+                                    <option value="density">Плотность</option>
+                                    <option value="habitability">Индекс обитаемости</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Сравнение ключевых параметров</h4>
+                            <div id="comparison-chart" class="chart"></div>
+                        </div>
+                    </div>
+                </div>
+                
                 <button id="save-btn" class="glow-btn">Сохранить результаты <i class="fas fa-save"></i></button>
             </section>
 

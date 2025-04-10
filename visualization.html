@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Визуализация данных экзопланет</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #eee;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chart-container {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .chart-title {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .chart {
+            width: 100%;
+            height: 400px;
+            position: relative;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+        .chart-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .chart-controls button {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #eee;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .chart-controls button:hover {
+            background: #3a3a3a;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-description {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 10px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+    </style>
+    <!-- SciChart.js зависимости -->
+    <script src="https://cdn.jsdelivr.net/npm/scichart@3.0.331/index.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Визуализация данных экзопланет</h1>
+            <p>Интерактивные графики и карта сравнения экзопланет</p>
+        </header>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="chart-title">Распределение параметров экзопланет</h2>
+                <div>
+                    <select id="parameter-select">
+                        <option value="radius">Радиус</option>
+                        <option value="temperature">Температура</option>
+                        <option value="density">Плотность</option>
+                        <option value="habitability">Индекс обитаемости</option>
+                    </select>
+                </div>
+            </div>
+            <div id="distribution-chart" class="chart">
+                <div class="loading">Загрузка данных...</div>
+            </div>
+            <div class="chart-description">
+                Распределение выбранного параметра среди всех известных экзопланет. 
+                Вертикальная красная линия показывает значение параметра для Земли.
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Карта экзопланет</h2>
+                </div>
+                <div id="exoplanet-map" class="chart">
+                    <div class="loading">Загрузка карты...</div>
+                </div>
+                <div class="chart-description">
+                    Карта экзопланет в 2D-пространстве, полученная с помощью метода главных компонент (PCA).
+                    Цвет обозначает потенциальную обитаемость, а размер - радиус планеты.
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #00FF00;"></div>
+                        <span>Высокая обитаемость</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ADFF2F;"></div>
+                        <span>Средняя обитаемость</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FFFF00;"></div>
+                        <span>Низкая обитаемость</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FFA500;"></div>
+                        <span>Очень низкая обитаемость</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FF0000;"></div>
+                        <span>Непригодна для жизни</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2 class="chart-title">Сравнение с Землей</h2>
+                </div>
+                <div id="radar-chart" class="chart">
+                    <div class="loading">Загрузка данных...</div>
+                </div>
+                <div class="chart-description">
+                    Сравнение выбранной планеты с Землей и наиболее похожими экзопланетами.
+                    Значения нормализованы для наглядности.
+                </div>
+                <div class="chart-controls">
+                    <button id="compare-btn">Сравнить свою планету</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ввода параметров планеты -->
+    <div id="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7);">
+        <div style="background-color: #1e1e1e; margin: 10% auto; padding: 20px; width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+            <h3 style="margin-top: 0;">Параметры вашей планеты</h3>
+            <form id="planet-form">
+                <div style="margin-bottom: 15px;">
+                    <label for="planet-name" style="display: block; margin-bottom: 5px;">Название:</label>
+                    <input type="text" id="planet-name" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2a2a2a; border: 1px solid #444; color: #eee; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="planet-radius" style="display: block; margin-bottom: 5px;">Радиус (в радиусах Земли):</label>
+                    <input type="number" id="planet-radius" step="0.01" min="0.1" max="20" value="1" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2a2a2a; border: 1px solid #444; color: #eee; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="planet-temperature" style="display: block; margin-bottom: 5px;">Температура (К):</label>
+                    <input type="number" id="planet-temperature" step="1" min="50" max="1000" value="288" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2a2a2a; border: 1px solid #444; color: #eee; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="planet-density" style="display: block; margin-bottom: 5px;">Плотность (г/см³):</label>
+                    <input type="number" id="planet-density" step="0.01" min="0.5" max="15" value="5.51" style="width: 100%; padding: 8px; box-sizing: border-box; background: #2a2a2a; border: 1px solid #444; color: #eee; border-radius: 4px;">
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="button" id="modal-cancel" style="background: #444; border: none; color: #eee; padding: 10px 15px; border-radius: 4px; margin-right: 10px; cursor: pointer;">Отмена</button>
+                    <button type="submit" style="background: #2196F3; border: none; color: #fff; padding: 10px 15px; border-radius: 4px; cursor: pointer;">Сравнить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Получение параметров планеты из URL
+        function getPlanetParamsFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const planetData = {
+                name: params.get('name') || 'Пример планеты',
+                radius: parseFloat(params.get('radius')) || 1.5,
+                temperature: parseFloat(params.get('temperature')) || 300,
+                density: parseFloat(params.get('density')) || 4.5,
+                habitability: parseInt(params.get('habitability')) || 50
+            };
+            
+            // Заполняем форму параметрами из URL
+            document.getElementById('planet-name').value = planetData.name;
+            document.getElementById('planet-radius').value = planetData.radius;
+            document.getElementById('planet-temperature').value = planetData.temperature;
+            document.getElementById('planet-density').value = planetData.density;
+            
+            return planetData;
+        }
+        
+        // Загружаем SciChart.js
+        async function initSciChart() {
+            // Создаем глобальное пространство имен SciChart
+            window.SciChartSurface.useWasm();
+            await SciChartSurface.loadWasmFromCDN();
+            
+            // Получаем параметры планеты из URL
+            const planetData = getPlanetParamsFromUrl();
+            
+            // Загружаем данные с сервера
+            loadDistributionData();
+            loadExoplanetMap();
+            
+            // Если переданы параметры планеты, сразу запускаем сравнение
+            if (window.location.search) {
+                submitPlanetData(planetData);
+            } else {
+                loadComparisonData();
+            }
+            
+            // Обработчики событий
+            document.getElementById('parameter-select').addEventListener('change', loadDistributionData);
+            document.getElementById('compare-btn').addEventListener('click', () => {
+                document.getElementById('modal').style.display = 'block';
+            });
+            document.getElementById('modal-cancel').addEventListener('click', () => {
+                document.getElementById('modal').style.display = 'none';
+            });
+            document.getElementById('planet-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitPlanetData();
+            });
+        }
+
+        // Создаем график распределения параметров
+        async function createDistributionChart(data, parameter) {
+            const { wasmContext, sciChartSurface } = await SciChartSurface.create("distribution-chart");
+            
+            // Получаем данные распределения
+            const histogramData = data.histogram_data[parameter];
+            const stats = data.stats[parameter];
+            
+            // Настройка осей
+            const xAxis = new NumericAxis(wasmContext);
+            xAxis.visibleRange = new NumberRange(histogramData.bin_edges[0], histogramData.bin_edges[histogramData.bin_edges.length - 1]);
+            
+            const yAxis = new NumericAxis(wasmContext);
+            yAxis.growBy = new NumberRange(0, 0.1);
+            
+            sciChartSurface.xAxes.add(xAxis);
+            sciChartSurface.yAxes.add(yAxis);
+            
+            // Гистограмма
+            const columnSeries = new ColumnSeries(wasmContext);
+            const xValues = [];
+            const yValues = [];
+            
+            // Преобразуем гистограмму в данные для столбцов
+            for (let i = 0; i < histogramData.counts.length; i++) {
+                xValues.push((histogramData.bin_edges[i] + histogramData.bin_edges[i + 1]) / 2);
+                yValues.push(histogramData.counts[i]);
+            }
+            
+            columnSeries.dataPointWidth = 0.8;
+            columnSeries.fillBrushStyle = new SolidFillBrushStyle('#2196F3');
+            columnSeries.dataSeries = new XyDataSeries(wasmContext, { xValues, yValues });
+            
+            // Вертикальная линия для значения Земли
+            const earthValue = stats.earth_value;
+            const verticalLine = new VerticalLineAnnotation({
+                x1: earthValue,
+                strokeThickness: 2,
+                stroke: '#FF5252',
+                showLabel: true,
+                labelValue: 'Земля',
+                labelPlacement: ELabelPlacement.TopRight
+            });
+            
+            // Добавляем серии и аннотации на график
+            sciChartSurface.renderableSeries.add(columnSeries);
+            sciChartSurface.annotations.add(verticalLine);
+            
+            // Добавляем легенду
+            const legend = new SciChartLegend({ position: ELegendPosition.Bottom });
+            legend.sciChartSurface = sciChartSurface;
+            
+            // Заголовки осей
+            const parameterLabels = {
+                'radius': 'Радиус (в радиусах Земли)',
+                'temperature': 'Температура (К)',
+                'density': 'Плотность (г/см³)',
+                'habitability': 'Индекс обитаемости'
+            };
+            
+            xAxis.axisTitle = parameterLabels[parameter];
+            yAxis.axisTitle = 'Количество планет';
+        }
+
+        // Создаем карту экзопланет
+        async function createExoplanetMap(data) {
+            const { wasmContext, sciChartSurface } = await SciChartSurface.create("exoplanet-map");
+            
+            // Настройка осей
+            const xAxis = new NumericAxis(wasmContext);
+            const yAxis = new NumericAxis(wasmContext);
+            
+            sciChartSurface.xAxes.add(xAxis);
+            sciChartSurface.yAxes.add(yAxis);
+            
+            // Создаем точечную серию
+            const scatterSeries = new ScatterSeries(wasmContext);
+            
+            // Данные для карты
+            const xValues = [];
+            const yValues = [];
+            const sizes = [];
+            const colors = [];
+            const keys = [];
+            
+            // Добавляем все планеты на карту
+            data.planets.forEach(planet => {
+                xValues.push(planet.x);
+                yValues.push(planet.y);
+                // Размер точки зависит от радиуса планеты
+                const size = 5 + (planet.radius * 2);
+                sizes.push(size);
+                colors.push(planet.color);
+                keys.push(planet.name);
+            });
+            
+            // Создаем палитру цветов для точек
+            const paletteProvider = new PaletteProvider(colors);
+            
+            // Настраиваем серию
+            scatterSeries.pointMarker = new EllipsePointMarker(wasmContext, {
+                width: 10,
+                height: 10,
+                strokeThickness: 2,
+                fill: "#FFFFFF",
+                paletteProvider: paletteProvider
+            });
+            
+            // Добавляем данные в серию
+            scatterSeries.dataSeries = new XyDataSeries(wasmContext, {
+                xValues, 
+                yValues,
+                dataLabels: keys
+            });
+            
+            // Настройка осей
+            xAxis.axisTitle = "Главная компонента 1";
+            yAxis.axisTitle = "Главная компонента 2";
+            
+            // Подсветка Земли
+            const earthIndex = data.planets.findIndex(p => p.name === 'Земля');
+            if (earthIndex >= 0) {
+                const earthAnnotation = new CustomAnnotation({
+                    x1: data.planets[earthIndex].x,
+                    y1: data.planets[earthIndex].y,
+                    xCoordinateMode: ECoordinateMode.Absolute,
+                    yCoordinateMode: ECoordinateMode.Absolute,
+                    horizontalAnchorPoint: EHorizontalAnchorPoint.Center,
+                    verticalAnchorPoint: EVerticalAnchorPoint.Center
+                });
+                
+                sciChartSurface.annotations.add(earthAnnotation);
+            }
+            
+            // Добавляем точечную серию на график
+            sciChartSurface.renderableSeries.add(scatterSeries);
+            
+            // Добавляем всплывающие подсказки
+            sciChartSurface.chartModifiers.add(new ZoomPanModifier());
+            sciChartSurface.chartModifiers.add(new ZoomExtentsModifier());
+            sciChartSurface.chartModifiers.add(new TooltipModifier());
+        }
+
+        // Создаем лепестковую диаграмму для сравнения планет
+        async function createRadarChart(data) {
+            const { wasmContext, sciChartSurface } = await SciChartSurface.create("radar-chart");
+            
+            // Создаем полярную ось с категориями
+            const radarAxis = new CategoryAxis(wasmContext);
+            radarAxis.categories = data.radar_data.labels;
+            
+            // Создаем радиальную ось для значений
+            const radiusAxis = new NumericAxis(wasmContext);
+            radiusAxis.visibleRange = new NumberRange(0, 1);
+            
+            sciChartSurface.xAxes.add(radarAxis);
+            sciChartSurface.yAxes.add(radiusAxis);
+            
+            // Добавляем серии для каждой планеты
+            data.radar_data.datasets.forEach((dataset, index) => {
+                const radarSeries = new RadarSeries(wasmContext);
+                
+                // Определяем цвет для серии
+                let color;
+                if (dataset.is_user_planet) {
+                    color = '#FF5252';  // Красный для пользовательской планеты
+                } else if (dataset.is_reference) {
+                    color = '#2196F3';  // Синий для Земли
+                } else {
+                    // Цвета для похожих планет
+                    const colors = ['#4CAF50', '#9C27B0', '#FFC107'];
+                    color = colors[index - 2];  // -2 для пропуска пользовательской планеты и Земли
+                }
+                
+                // Настраиваем внешний вид серии
+                radarSeries.strokeThickness = 3;
+                radarSeries.stroke = new SolidPenStyle(color);
+                radarSeries.fillBrushStyle = new SolidFillBrushStyle(color, 0.2);
+                
+                // Добавляем данные в серию
+                const xValues = data.radar_data.labels.map((_, i) => i);
+                radarSeries.dataSeries = new XyDataSeries(wasmContext, {
+                    xValues: xValues,
+                    yValues: dataset.data,
+                    dataLabels: xValues.map(() => dataset.label)
+                });
+                
+                sciChartSurface.renderableSeries.add(radarSeries);
+            });
+            
+            // Добавляем легенду
+            const legend = new SciChartLegend({ position: ELegendPosition.Bottom });
+            legend.sciChartSurface = sciChartSurface;
+            
+            // Добавляем модификаторы для взаимодействия
+            sciChartSurface.chartModifiers.add(new ZoomPanModifier());
+            sciChartSurface.chartModifiers.add(new ZoomExtentsModifier());
+            sciChartSurface.chartModifiers.add(new TooltipModifier());
+        }
+
+        // Загрузка данных распределения параметров
+        async function loadDistributionData() {
+            const distributionElement = document.getElementById('distribution-chart');
+            distributionElement.innerHTML = '<div class="loading">Загрузка данных...</div>';
+            
+            const parameter = document.getElementById('parameter-select').value;
+            
+            try {
+                const response = await fetch('/api/visualization/parameter-distribution');
+                const data = await response.json();
+                
+                // Очищаем контейнер перед созданием нового графика
+                distributionElement.innerHTML = '';
+                
+                // Создаем график распределения
+                createDistributionChart(data, parameter);
+            } catch (error) {
+                console.error('Ошибка при загрузке данных распределения:', error);
+                distributionElement.innerHTML = '<div class="loading">Ошибка загрузки данных</div>';
+            }
+        }
+
+        // Загрузка данных для карты экзопланет
+        async function loadExoplanetMap() {
+            const mapElement = document.getElementById('exoplanet-map');
+            mapElement.innerHTML = '<div class="loading">Загрузка карты...</div>';
+            
+            try {
+                const response = await fetch('/api/visualization/exoplanet-comparison-map');
+                const data = await response.json();
+                
+                // Очищаем контейнер перед созданием нового графика
+                mapElement.innerHTML = '';
+                
+                // Создаем карту экзопланет
+                createExoplanetMap(data);
+            } catch (error) {
+                console.error('Ошибка при загрузке данных карты:', error);
+                mapElement.innerHTML = '<div class="loading">Ошибка загрузки карты</div>';
+            }
+        }
+
+        // Загрузка данных для сравнения с Землей
+        async function loadComparisonData() {
+            const radarElement = document.getElementById('radar-chart');
+            radarElement.innerHTML = '<div class="loading">Загрузка данных...</div>';
+            
+            try {
+                // Создаем пример планеты для начального отображения
+                const examplePlanet = {
+                    name: 'Пример планеты',
+                    radius: 1.5,
+                    temperature: 300,
+                    density: 4.5
+                };
+                
+                const response = await fetch('/api/planet/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(examplePlanet)
+                });
+                
+                const data = await response.json();
+                
+                // Очищаем контейнер перед созданием нового графика
+                radarElement.innerHTML = '';
+                
+                // Создаем лепестковую диаграмму
+                createRadarChart(data);
+            } catch (error) {
+                console.error('Ошибка при загрузке данных для сравнения:', error);
+                radarElement.innerHTML = '<div class="loading">Ошибка загрузки данных</div>';
+            }
+        }
+
+        // Отправка данных пользовательской планеты для сравнения
+        async function submitPlanetData(customData) {
+            // Если данные не переданы, берем их из формы
+            let planetData;
+            if (customData) {
+                planetData = customData;
+            } else {
+                const name = document.getElementById('planet-name').value || 'Моя планета';
+                const radius = parseFloat(document.getElementById('planet-radius').value);
+                const temperature = parseFloat(document.getElementById('planet-temperature').value);
+                const density = parseFloat(document.getElementById('planet-density').value);
+                
+                planetData = {
+                    name: name,
+                    radius: radius,
+                    temperature: temperature,
+                    density: density
+                };
+                
+                // Скрываем модальное окно, если данные были введены через форму
+                document.getElementById('modal').style.display = 'none';
+            }
+            
+            const radarElement = document.getElementById('radar-chart');
+            radarElement.innerHTML = '<div class="loading">Анализ планеты...</div>';
+            
+            try {
+                const response = await fetch('/api/planet/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planetData)
+                });
+                
+                const data = await response.json();
+                
+                // Очищаем контейнер перед созданием нового графика
+                radarElement.innerHTML = '';
+                
+                // Создаем лепестковую диаграмму
+                createRadarChart(data);
+            } catch (error) {
+                console.error('Ошибка при отправке данных планеты:', error);
+                radarElement.innerHTML = '<div class="loading">Ошибка анализа планеты</div>';
+            }
+        }
+
+        // Специальный класс для провайдера цветов точек
+        class PaletteProvider {
+            constructor(colors) {
+                this.colors = colors;
+            }
+            
+            overridePointMarkerArgb(index, opacity = 1.0) {
+                const color = this.colors[index];
+                return parseColor(color, opacity);
+            }
+        }
+
+        // Преобразование цвета из строки в ARGB
+        function parseColor(color, opacity = 1.0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = 1;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 1, 1);
+            const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+            return ((opacity * 255) << 24) | (r << 16) | (g << 8) | b;
+        }
+
+        // Инициализация после загрузки страницы
+        document.addEventListener('DOMContentLoaded', initSciChart);
+    </script>
+</body>
+</html> 

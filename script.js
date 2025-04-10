@@ -2,6 +2,33 @@
 let exoplanetsData = [];
 let filteredPlanets = [];
 
+// Глобальные объекты для SciChart
+// const {
+//     SciChartSurface,
+//     NumericAxis,
+//     CategoryAxis,
+//     XyDataSeries,
+//     NumberRange,
+//     RadarSeries,
+//     ScatterSeries,
+//     EllipsePointMarker,
+//     SolidPenStyle,
+//     SolidFillBrushStyle,
+//     SciChartLegend,
+//     ELegendPosition,
+//     ZoomPanModifier,
+//     ZoomExtentsModifier,
+//     TooltipModifier,
+//     CustomAnnotation,
+//     ECoordinateMode,
+//     EHorizontalAnchorPoint,
+//     EVerticalAnchorPoint,
+//     VerticalLineAnnotation,
+//     ELabelPlacement,
+//     ColumnSeries,
+//     TextAnnotation
+// } = SciChart;
+
 // Датасет экзопланет (исходная база данных)
 const exoplanetsDataSet = [
     {
@@ -203,26 +230,49 @@ function initEventListeners() {
         analyzeBtn.addEventListener('click', analyzePlanet);
     }
     
-    // Обработчик очистки результатов
-    const clearResultsBtn = document.getElementById('clear-results');
-    if (clearResultsBtn) {
-        clearResultsBtn.addEventListener('click', function() {
-            document.getElementById('results').classList.add('hidden');
+    // Обработчик кнопки поиска в базе данных
+    const dbSearchBtn = document.getElementById('db-search-btn');
+    if (dbSearchBtn) {
+        dbSearchBtn.addEventListener('click', function() {
+            const searchQuery = document.getElementById('db-search').value.toLowerCase();
+            const filteredResults = exoplanetsData.filter(planet => {
+                return planet.name.toLowerCase().includes(searchQuery);
+            });
+            displayPlanetsList(filteredResults);
         });
     }
     
-    // Обработчики для фильтрации экзопланет
-    const sortBySelect = document.getElementById('sort-by');
-    if (sortBySelect) {
-        sortBySelect.addEventListener('change', function() {
-            sortPlanets(this.value);
+    // Обработчик фильтра типов планет
+    const filterType = document.getElementById('filter-type');
+    if (filterType) {
+        filterType.addEventListener('change', function() {
+            filterHabitablePlanets(this.value);
         });
     }
     
-    const habitableOnly = document.getElementById('habitable-only');
-    if (habitableOnly) {
-        habitableOnly.addEventListener('change', function() {
-            filterHabitablePlanets(this.checked);
+    // Обработчик кнопки сортировки
+    const sortBtn = document.getElementById('sort-btn');
+    if (sortBtn) {
+        sortBtn.addEventListener('click', function() {
+            const criterion = this.getAttribute('data-sort');
+            sortPlanets(criterion);
+            
+            // Переключаем критерий сортировки
+            if (criterion === 'name') {
+                this.setAttribute('data-sort', 'habitability');
+                this.innerHTML = '<i class="fas fa-sort"></i> Сортировать по обитаемости';
+            } else {
+                this.setAttribute('data-sort', 'name');
+                this.innerHTML = '<i class="fas fa-sort"></i> Сортировать по имени';
+            }
+        });
+    }
+    
+    // Обработчик кнопки сохранения результатов
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            saveResults();
         });
     }
 }
@@ -260,47 +310,81 @@ async function fetchExoplanetsData() {
     displayPlanetsList(filteredPlanets);
 }
 
-// Анализ экзопланеты по введенным параметрам
+// Выполнение анализа планеты
 async function analyzePlanet() {
-    // Получение значений из формы
+    // Получение данных из формы
     const name = document.getElementById('planet-name').value || 'Неизвестная планета';
     const radius = parseFloat(document.getElementById('planet-radius').value);
     const temperature = parseFloat(document.getElementById('planet-temp').value);
     const density = parseFloat(document.getElementById('planet-density').value);
     
-    // Валидация
+    // Проверка корректности введенных данных
     if (isNaN(radius) || isNaN(temperature) || isNaN(density)) {
-        alert('Пожалуйста, введите корректные числовые значения для всех параметров');
+        alert('Пожалуйста, заполните все числовые поля корректными значениями');
         return;
     }
     
-    // Пытаемся получить данные с сервера
+    // Показываем анимацию загрузки
+    const analyzeBtn = document.getElementById('analyze-btn');
+    if (analyzeBtn) {
+        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Анализ...';
+        analyzeBtn.disabled = true;
+    }
+    
     try {
+        // Отправляем данные на сервер для анализа
         const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name,
-                radius,
-                temperature,
-                density
+                name: name,
+                radius: radius,
+                temperature: temperature,
+                density: density
             })
         });
         
         if (!response.ok) {
-            throw new Error('Ошибка сервера');
+            throw new Error(`Ошибка HTTP: ${response.status}`);
         }
         
         const data = await response.json();
+        
+        // Отображаем результаты
         displayResults(data);
+        
+        // Убираем анимацию загрузки
+        if (analyzeBtn) {
+            analyzeBtn.innerHTML = 'Анализировать <i class="fas fa-search"></i>';
+            analyzeBtn.disabled = false;
+        }
+        
+        // Если база данных еще не загружена, загружаем ее
+        if (exoplanetsData.length === 0) {
+            fetchExoplanetsData();
+        }
         
     } catch (error) {
         console.warn('Не удалось получить данные с сервера:', error);
         // Если сервер недоступен, рассчитываем локально
         const localResults = analyzeLocalPlanet(name, radius, temperature, density);
         displayResults(localResults);
+        
+        // Если база данных еще не загружена, загружаем ее
+        if (exoplanetsData.length === 0) {
+            // Используем локальный датасет
+            exoplanetsData = [...exoplanetsDataSet];
+            filteredPlanets = [...exoplanetsData];
+            displayPlanetsList(filteredPlanets);
+        }
+        
+        // Убираем анимацию загрузки
+        if (analyzeBtn) {
+            analyzeBtn.innerHTML = 'Анализировать <i class="fas fa-search"></i>';
+            analyzeBtn.disabled = false;
+        }
     }
 }
 
@@ -413,6 +497,212 @@ function displayResults(data) {
     
     // Отображаем похожие планеты
     displaySimilarPlanets(data.similar_planets);
+    
+    // Создаем графики визуализации
+    initChartsVisualization(data);
+}
+
+// Функция инициализации визуализации с использованием Plotly
+async function initChartsVisualization(planetData) {
+    // Создаем радар-диаграмму
+    await createRadarChart(planetData);
+    
+    // Создаем карту экзопланет
+    await fetchAndCreateExoplanetMap(planetData);
+    
+    // Загружаем данные для диаграмм распределения
+    await loadDistributionData(planetData);
+    
+    // Создаем сравнительную диаграмму
+    await createComparisonChart(planetData);
+}
+
+// Создание радар-диаграммы с использованием Plotly
+async function createRadarChart(planetData) {
+    const normalizedData = normalizeDataForRadar(planetData);
+    
+    const data = [{
+        type: 'scatterpolar',
+        r: normalizedData.values,
+        theta: normalizedData.categories,
+        fill: 'toself',
+        name: planetData.name,
+        line: {
+            color: 'rgba(32, 156, 238, 0.8)'
+        }
+    }, {
+        type: 'scatterpolar',
+        r: [1, 1, 1, 1],
+        theta: normalizedData.categories,
+        fill: 'toself',
+        name: 'Идеальные параметры',
+        line: {
+            color: 'rgba(76, 175, 80, 0.5)'
+        }
+    }];
+    
+    const layout = {
+        polar: {
+            radialaxis: {
+                visible: true,
+                range: [0, 1]
+            }
+        },
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1,
+            bgcolor: 'rgba(10, 10, 30, 0.7)',
+            font: {
+                color: '#fff'
+            }
+        },
+        paper_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        plot_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        font: {
+            color: '#fff'
+        },
+        margin: {
+            l: 40,
+            r: 40,
+            t: 30,
+            b: 30
+        }
+    };
+    
+    Plotly.newPlot('radar-chart', data, layout, {responsive: true});
+}
+
+// Создание карты экзопланет с использованием Plotly
+async function fetchAndCreateExoplanetMap(planetData) {
+    // Используем данные из глобальной переменной экзопланет
+    createExoplanetMap([...exoplanetsData, planetData]);
+}
+
+async function createExoplanetMap(data) {
+    const traces = [];
+    
+    // Добавляем обитаемые планеты
+    const habitablePlanets = data.filter(p => p.esi >= 0.8 || p.potentially_habitable);
+    
+    // Добавляем необитаемые планеты
+    const nonHabitablePlanets = data.filter(p => p.esi < 0.8 && !p.potentially_habitable);
+    
+    // Создаем trace для обитаемых планет
+    if (habitablePlanets.length > 0) {
+        const habitable = {
+            x: habitablePlanets.map(p => p.temperature),
+            y: habitablePlanets.map(p => p.radius),
+            text: habitablePlanets.map(p => p.name),
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Потенциально обитаемые',
+            marker: {
+                size: habitablePlanets.map(p => Math.max(8, Math.min(15, p.esi * 15))),
+                color: habitablePlanets.map(p => getHabitabilityColor(p.esi * 100)),
+                opacity: habitablePlanets.map(p => getAtmosphereOpacity(p.density))
+            }
+        };
+        traces.push(habitable);
+    }
+    
+    // Создаем trace для необитаемых планет
+    if (nonHabitablePlanets.length > 0) {
+        const nonHabitable = {
+            x: nonHabitablePlanets.map(p => p.temperature),
+            y: nonHabitablePlanets.map(p => p.radius),
+            text: nonHabitablePlanets.map(p => p.name),
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Необитаемые',
+            marker: {
+                size: nonHabitablePlanets.map(p => Math.max(6, Math.min(12, p.radius * 4))),
+                color: nonHabitablePlanets.map(p => getPlanetColor(p.temperature)),
+                opacity: nonHabitablePlanets.map(p => getAtmosphereOpacity(p.density))
+            }
+        };
+        traces.push(nonHabitable);
+    }
+    
+    // Добавляем зону обитаемости (habitable zone)
+    const habitableZoneX = [200, 300, 300, 200, 200];
+    const habitableZoneY = [0.5, 0.5, 2, 2, 0.5];
+    
+    const habitableZone = {
+        x: habitableZoneX,
+        y: habitableZoneY,
+        fill: 'toself',
+        fillcolor: 'rgba(0, 255, 100, 0.1)',
+        line: {
+            color: 'rgba(0, 255, 100, 0.5)'
+        },
+        type: 'scatter',
+        mode: 'lines',
+        name: 'Зона обитаемости'
+    };
+    
+    traces.push(habitableZone);
+    
+    const layout = {
+        title: '',
+        xaxis: {
+            title: 'Температура (K)',
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            range: [150, Math.min(2000, Math.max(...data.map(p => p.temperature)) * 1.1)]
+        },
+        yaxis: {
+            title: 'Радиус (R⊕)',
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            range: [0, Math.min(5, Math.max(...data.map(p => p.radius)) * 1.1)]
+        },
+        hovermode: 'closest',
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1,
+            bgcolor: 'rgba(10, 10, 30, 0.7)',
+            font: {
+                color: '#fff'
+            }
+        },
+        paper_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        plot_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        font: {
+            color: '#fff'
+        },
+        margin: {
+            l: 50,
+            r: 30,
+            t: 30,
+            b: 50
+        }
+    };
+    
+    Plotly.newPlot('exoplanet-map', traces, layout, {responsive: true});
+}
+
+// Нормализация данных для радарного графика
+function normalizeDataForRadar(planetData) {
+    // Идеальные значения (Земля)
+    const idealRadius = 1.0;
+    const idealTemp = 288;
+    const idealDensity = 5.51;
+    
+    // Диапазоны для нормализации
+    const radiusRange = 2.0;    // ±2 радиуса Земли
+    const tempRange = 100;      // ±100K от земной температуры
+    const densityRange = 3.0;   // ±3 г/см³ от плотности Земли
+    
+    // Нормализация значений
+    const normRadius = Math.max(0, 1 - Math.abs(planetData.radius - idealRadius) / radiusRange);
+    const normTemp = Math.max(0, 1 - Math.abs(planetData.temperature - idealTemp) / tempRange);
+    const normDensity = Math.max(0, 1 - Math.abs(planetData.density - idealDensity) / densityRange);
+    const normHabitability = planetData.habitability_score / 100;  // Индекс обитаемости уже в шкале 0-100
+    
+    return {
+        categories: ['Радиус', 'Температура', 'Плотность', 'Обитаемость'],
+        values: [normRadius, normTemp, normDensity, normHabitability]
+    };
 }
 
 // Получение цвета оценки обитаемости
@@ -509,52 +799,31 @@ function displaySimilarPlanets(planets) {
     });
 }
 
-// Отображение списка экзопланет
+// Отображение списка экзопланет в интерфейсе
 function displayPlanetsList(planets) {
     const container = document.getElementById('exoplanets-list');
-    
-    // Проверка существования контейнера
     if (!container) {
-        console.error('Контейнер для списка планет не найден');
+        console.error('Контейнер для списка экзопланет не найден');
         return;
     }
     
-    // Очистка контейнера
+    // Очищаем контейнер
     container.innerHTML = '';
     
-    // Проверка наличия планет
-    if (!planets || planets.length === 0) {
-        container.innerHTML = '<p>Нет доступных данных о планетах. Пожалуйста, обновите страницу или проверьте соединение с сервером.</p>';
-        // Принудительно используем локальные данные
-        planets = [...exoplanetsDataSet];
-        console.log('Принудительное отображение локальных данных, так как список планет пуст');
+    if (planets.length === 0) {
+        container.innerHTML = '<p>Нет данных об экзопланетах, соответствующих критериям.</p>';
+        return;
     }
     
-    console.log('Отображаем', planets.length, 'планет');
-    
-    // Отображение каждой планеты напрямую в контейнере
+    // Добавляем планеты в интерфейс
     planets.forEach(planet => {
-        // Проверка корректности данных планеты
-        if (!planet || !planet.name) {
-            console.warn('Некорректные данные планеты:', planet);
-            return;
-        }
-        
         const habitabilityClass = planet.potentially_habitable ? 'habitable' : 'non-habitable';
+        const esiValue = typeof planet.esi === 'number' ? planet.esi.toFixed(2) : planet.esi;
         
         const planetElement = document.createElement('div');
         planetElement.className = `planet-item ${habitabilityClass}`;
         
-        // Добавляем обработчик клика на всю карточку
-        planetElement.addEventListener('click', () => {
-            document.getElementById('planet-name').value = planet.name;
-            document.getElementById('planet-radius').value = planet.radius;
-            document.getElementById('planet-temp').value = planet.temperature;
-            document.getElementById('planet-density').value = planet.density;
-            analyzePlanet();
-        });
-        
-        // Тип планеты
+        // Преобразуем тип планеты для корректного отображения в CSS классе
         const typeClass = planet.type ? planet.type.toLowerCase().replace(/\s+/g, '-') : '';
         
         planetElement.innerHTML = `
@@ -562,9 +831,28 @@ function displayPlanetsList(planets) {
             <p>Радиус: ${planet.radius} R⊕</p>
             <p>Температура: ${planet.temperature} K</p>
             <p>Плотность: ${planet.density} г/см³</p>
-            ${planet.type ? `<p class="planet-type ${typeClass}">Тип: ${planet.type}</p>` : ''}
-            <span class="esi-badge">ESI: ${typeof planet.esi === 'number' ? planet.esi.toFixed(2) : planet.esi}</span>
+            <span class="planet-type ${typeClass}">${planet.type || 'Нет данных'}</span>
+            <span class="esi-badge">ESI: ${esiValue}</span>
+            <button class="analyze-item-btn glow-btn">Анализировать</button>
         `;
+        
+        // Добавляем обработчик для анализа планеты при клике на кнопку
+        const analyzeBtn = planetElement.querySelector('.analyze-item-btn');
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', function() {
+                // Заполняем форму данными выбранной планеты
+                document.getElementById('planet-name').value = planet.name;
+                document.getElementById('planet-radius').value = planet.radius;
+                document.getElementById('planet-temp').value = planet.temperature;
+                document.getElementById('planet-density').value = planet.density;
+                
+                // Запускаем анализ
+                analyzePlanet();
+                
+                // Прокручиваем к форме анализа
+                document.querySelector('.search-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
         
         container.appendChild(planetElement);
     });
@@ -599,6 +887,255 @@ function filterHabitablePlanets(showOnlyHabitable) {
     }
     
     displayPlanetsList(filteredPlanets);
+}
+
+// Функция для перехода на страницу визуализации с параметрами текущей планеты
+function navigateToDetailedVisualization(planetData) {
+    // Кодируем данные планеты в URL параметры
+    const params = new URLSearchParams({
+        name: planetData.name || 'Неизвестная планета',
+        radius: planetData.radius || 1,
+        temperature: planetData.temperature || 288,
+        density: planetData.density || 5.51,
+        habitability: planetData.habitability_score || 50
+    });
+    
+    // Переходим на страницу визуализации с параметрами
+    window.location.href = `/visualization?${params.toString()}`;
+}
+
+// Загрузка и отображение данных распределения параметров
+async function loadDistributionData(planetData) {
+    const distributionElement = document.getElementById('distribution-chart');
+    if (!distributionElement) {
+        console.error('Элемент графика распределения не найден');
+        return;
+    }
+    
+    distributionElement.innerHTML = '<div class="loading">Загрузка данных...</div>';
+    
+    const parameter = document.getElementById('parameter-select').value;
+    
+    try {
+        const response = await fetch('/api/visualization/parameter-distribution');
+        const data = await response.json();
+        
+        // Очищаем контейнер перед созданием нового графика
+        distributionElement.innerHTML = '';
+        
+        // Создаем график распределения
+        await createDistributionChart(data, parameter, planetData);
+    } catch (error) {
+        console.error('Ошибка при загрузке данных распределения:', error);
+        // Если не удалось получить данные с сервера, создаем простой график
+        createSimpleDistributionChart(planetData, parameter);
+    }
+}
+
+// Функция для создания простой диаграммы распределения (гистограммы)
+async function createSimpleDistributionChart(planetData, parameter) {
+    // Создаем трейс для гистограммы всех планет
+    const allPlanetsTrace = {
+        x: exoplanetsData.map(p => p[parameter]),
+        type: 'histogram',
+        name: 'Все экзопланеты',
+        opacity: 0.7,
+        marker: {
+            color: 'rgba(100, 149, 237, 0.7)'
+        },
+        autobinx: true
+    };
+    
+    // Создаем трейс для анализируемой планеты (вертикальная линия)
+    const planetLine = {
+        x: [planetData[parameter], planetData[parameter]],
+        y: [0, 10], // Будет автоматически масштабироваться
+        type: 'scatter',
+        mode: 'lines',
+        name: planetData.name,
+        line: {
+            color: 'rgba(255, 99, 71, 1)',
+            width: 2,
+            dash: 'dash'
+        }
+    };
+    
+    let title = '';
+    let xaxisTitle = '';
+    
+    switch(parameter) {
+        case 'radius':
+            title = 'Распределение радиусов экзопланет';
+            xaxisTitle = 'Радиус (R⊕)';
+            break;
+        case 'temperature':
+            title = 'Распределение температур экзопланет';
+            xaxisTitle = 'Температура (K)';
+            break;
+        case 'density':
+            title = 'Распределение плотности экзопланет';
+            xaxisTitle = 'Плотность (г/см³)';
+            break;
+        case 'esi':
+            title = 'Распределение индекса обитаемости экзопланет';
+            xaxisTitle = 'Индекс обитаемости (ESI)';
+            break;
+    }
+    
+    const layout = {
+        title: '',
+        xaxis: {
+            title: xaxisTitle,
+            gridcolor: 'rgba(255, 255, 255, 0.1)'
+        },
+        yaxis: {
+            title: 'Количество экзопланет',
+            gridcolor: 'rgba(255, 255, 255, 0.1)'
+        },
+        hovermode: 'closest',
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1,
+            bgcolor: 'rgba(10, 10, 30, 0.7)',
+            font: {
+                color: '#fff'
+            }
+        },
+        paper_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        plot_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        font: {
+            color: '#fff'
+        },
+        margin: {
+            l: 50,
+            r: 30,
+            t: 30,
+            b: 50
+        }
+    };
+    
+    Plotly.newPlot('distribution-chart', [allPlanetsTrace, planetLine], layout, {responsive: true});
+}
+
+// Создание графика сравнения ключевых параметров
+async function createComparisonChart(planetData) {
+    // Находим Землю и другие известные планеты для сравнения
+    const earthLikeIndex = exoplanetsData.findIndex(p => p.name === "TRAPPIST-1e");
+    const jupiterLikeIndex = exoplanetsData.findIndex(p => p.name === "WASP-12b");
+    
+    // Если не нашли в базе, используем планету с индексами 2 и 10
+    const earthLike = earthLikeIndex !== -1 ? exoplanetsData[earthLikeIndex] : exoplanetsData[2];
+    const jupiterLike = jupiterLikeIndex !== -1 ? exoplanetsData[jupiterLikeIndex] : exoplanetsData[10];
+    
+    // Формируем данные для сравнения
+    const planets = [earthLike, jupiterLike, planetData];
+    const categories = ['Радиус', 'Температура', 'Плотность', 'ESI'];
+    
+    // Формируем traceyы для каждой планеты
+    const traces = planets.map(planet => {
+        // Нормализуем температуру относительно оптимальной (273-288К)
+        const normalizedTemp = Math.min(1, 288 / planet.temperature);
+        
+        // Нормализуем радиус относительно Земли (1.0)
+        const normalizedRadius = Math.min(1, 1 / planet.radius);
+        
+        // Нормализуем плотность относительно плотности Земли (5.51 г/см³)
+        const normalizedDensity = Math.min(1, planet.density / 5.51);
+        
+        return {
+            x: categories,
+            y: [
+                planet.radius,
+                planet.temperature,
+                planet.density,
+                planet.esi || 0
+            ],
+            type: 'bar',
+            name: planet.name
+        };
+    });
+    
+    const layout = {
+        title: '',
+        xaxis: {
+            title: '',
+            gridcolor: 'rgba(255, 255, 255, 0.1)'
+        },
+        yaxis: {
+            title: 'Значение',
+            gridcolor: 'rgba(255, 255, 255, 0.1)',
+            type: 'log'
+        },
+        barmode: 'group',
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1,
+            bgcolor: 'rgba(10, 10, 30, 0.7)',
+            font: {
+                color: '#fff'
+            }
+        },
+        paper_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        plot_bgcolor: 'rgba(10, 10, 30, 0.0)',
+        font: {
+            color: '#fff'
+        },
+        margin: {
+            l: 50,
+            r: 30,
+            t: 30,
+            b: 50
+        }
+    };
+    
+    Plotly.newPlot('comparison-chart', traces, layout, {responsive: true});
+}
+
+// Функция сохранения результатов анализа
+function saveResults() {
+    // Получаем данные результатов
+    const name = document.getElementById('result-name').textContent;
+    const radius = document.getElementById('result-radius').textContent;
+    const temperature = document.getElementById('result-temp').textContent;
+    const density = document.getElementById('result-density').textContent;
+    const habitability = document.getElementById('habitability-index').textContent;
+    const assessment = document.getElementById('result-assessment').textContent;
+    
+    // Формируем текст отчета
+    const reportText = `
+Отчет по анализу экзопланеты: ${name}
+---------------------------------------
+Параметры планеты:
+- Радиус: ${radius} R⊕
+- Температура: ${temperature} K
+- Плотность: ${density} г/см³
+
+Результаты анализа:
+- Индекс обитаемости: ${habitability}/100
+- Заключение: ${assessment}
+
+Отчет сгенерирован: ${new Date().toLocaleString()}
+`;
+    
+    // Создаем файл для скачивания
+    const blob = new Blob([reportText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    
+    // Создаем ссылку для скачивания
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `Анализ_${name.replace(/\s+/g, '_')}.txt`;
+    
+    // Добавляем ссылку в DOM и симулируем клик
+    document.body.appendChild(a);
+    a.click();
+    
+    // Удаляем ссылку
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
 }
 
 // Экспорт функций для тестирования
