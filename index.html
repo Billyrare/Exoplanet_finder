@@ -7,10 +7,33 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Plotly зависимости -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Three.js для 3D визуализации -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <!-- Дополнительные компоненты Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
     <div class="stars"></div>
+    
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-globe-americas"></i>
+                <span>ExoPlanet Analyzer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="database.html"><i class="fas fa-database"></i> База данных экзопланет</a></li>
+                <li><a href="#about"><i class="fas fa-info-circle"></i> О проекте</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container">
         <header>
             <h1>Интеллектуальная система анализа обитаемости экзопланет</h1>
@@ -34,8 +57,9 @@
                         <input type="number" id="planet-temp" placeholder="Например: 288">
                     </div>
                     <div class="input-group">
-                        <label for="planet-density">Плотность (г/см³)</label>
-                        <input type="number" id="planet-density" step="0.01" placeholder="Например: 5.51">
+                        <label for="planet-density">Плотность (относительно Земли)</label>
+                        <input type="number" id="planet-density" step="0.01" min="0.01" max="3" placeholder="Например: 1.0 (Земля = 1.0)">
+                        <span class="input-hint">Земля = 1.0, Марс = 0.7, Юпитер = 0.24, Венера = 0.95</span>
                     </div>
                     <button id="analyze-btn" class="glow-btn">Анализировать <i class="fas fa-search"></i></button>
                 </div>
@@ -46,7 +70,9 @@
                 <div class="results-container">
                     <div class="planet-card">
                         <div class="planet-visual">
-                            <div class="planet" id="planet-visualization"></div>
+                            <div id="planet-3d-container"></div>
+                            <div class="planet-atmosphere"></div>
+                            <div class="planet-interaction-hint">Перетащите для вращения</div>
                         </div>
                         <div class="planet-info">
                             <h3 id="result-name">Название планеты</h3>
@@ -57,7 +83,7 @@
                             <div class="planet-details">
                                 <p>Радиус: <span id="result-radius">0</span> R⊕</p>
                                 <p>Температура: <span id="result-temp">0</span> K</p>
-                                <p>Плотность: <span id="result-density">0</span> г/см³</p>
+                                <p>Плотность: <span id="result-density">0</span> от земной</p>
                             </div>
                             <div class="assessment">
                                 <h4>Заключение:</h4>
@@ -70,6 +96,16 @@
                         <div id="similar-planets-list" class="planets-list">
                             <!-- Здесь будут динамически добавляться похожие планеты -->
                         </div>
+                    </div>
+                </div>
+
+                <!-- Отдельная карточка для рекомендаций -->
+                <div class="recommendations-card">
+                    <h3>Рекомендации</h3>
+                    <div class="recommendations">
+                        <ul id="result-recommendations">
+                            <!-- Здесь будут отображаться рекомендации -->
+                        </ul>
                     </div>
                 </div>
 
@@ -102,28 +138,6 @@
                 </div>
 
                 <button id="save-btn" class="glow-btn">Сохранить результаты <i class="fas fa-save"></i></button>
-            </section>
-
-            <section class="database-section">
-                <h2>База данных экзопланет</h2>
-                <div class="database-controls">
-                    <div class="search-bar">
-                        <input type="text" id="db-search" placeholder="Поиск по названию...">
-                        <button id="db-search-btn"><i class="fas fa-search"></i></button>
-                    </div>
-                    <div class="filter-options">
-                        <select id="filter-type">
-                            <option value="all">Все типы</option>
-                            <option value="habitable">Потенциально обитаемые</option>
-                            <option value="non-habitable">Необитаемые</option>
-                        </select>
-                        <button id="sort-btn" data-sort="name"><i class="fas fa-sort"></i> Сортировка</button>
-                    </div>
-                </div>
-                <div class="database-container" id="planets-database">
-                    <!-- Здесь будут динамически загружаться данные из датасета -->
-                    <div id="exoplanets-list"></div>
-                </div>
             </section>
         </main>
 

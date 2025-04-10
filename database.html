@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База данных экзопланет</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="stars"></div>
+    
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-globe-americas"></i>
+                <span>ExoPlanet Analyzer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="database.html" class="active"><i class="fas fa-database"></i> База данных экзопланет</a></li>
+                <li><a href="#about"><i class="fas fa-info-circle"></i> О проекте</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header>
+            <h1>База данных экзопланет</h1>
+            <p>Исследуйте и анализируйте известные экзопланеты</p>
+        </header>
+
+        <main>
+            <section class="database-section">
+                <div class="database-intro">
+                    <h2>Каталог экзопланет</h2>
+                    <p>В этом разделе представлена база данных известных экзопланет с их основными параметрами. Вы можете использовать фильтры для поиска конкретных планет или сортировать список по различным параметрам.</p>
+                </div>
+                
+                <div class="search-panel">
+                    <input type="text" id="db-search" placeholder="Поиск по названию планеты...">
+                    <select id="filter-type">
+                        <option value="all">Все планеты</option>
+                        <option value="habitable">Потенциально обитаемые</option>
+                        <option value="non-habitable">Необитаемые</option>
+                        <option value="earth-like">Землеподобные</option>
+                        <option value="super-earth">Суперземли</option>
+                        <option value="gas-giant">Газовые гиганты</option>
+                    </select>
+                    <button id="db-search-btn">
+                        <i class="fas fa-search"></i>
+                        Поиск
+                    </button>
+                    <button id="sort-btn" class="sort-btn" data-sort="name">
+                        <i class="fas fa-sort"></i>
+                        По имени
+                    </button>
+                </div>
+                
+                <div class="database-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-globe"></i>
+                        <div class="stat-info">
+                            <span id="total-planets">0</span>
+                            <p>Всего планет</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-leaf"></i>
+                        <div class="stat-info">
+                            <span id="habitable-planets">0</span>
+                            <p>Потенциально обитаемые</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <div class="stat-info">
+                            <span id="high-esi-planets">0</span>
+                            <p>Высокий индекс ESI</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="database-container" id="planets-database">
+                    <!-- Здесь будут динамически загружаться данные из датасета -->
+                    <div id="exoplanets-list" class="exoplanets-grid"></div>
+                    <div id="loading-planets" class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Загрузка данных...</p>
+                    </div>
+                </div>
+                
+                <div class="pagination">
+                    <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Предыдущая</button>
+                    <div id="page-info">Страница 1 из 1</div>
+                    <button id="next-page" disabled>Следующая <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </section>
+            
+            <section class="visualization-section">
+                <h2>Визуализация данных</h2>
+                <div class="charts-container">
+                    <div class="chart-card full-width">
+                        <h3>Распределение экзопланет по типам</h3>
+                        <div id="planets-by-type-chart" class="chart-container"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Распределение по обитаемости</h3>
+                        <div id="habitability-distribution" class="chart-container"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Зависимость радиуса от температуры</h3>
+                        <div id="radius-vs-temp" class="chart-container"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Дипломная работа "Интеллектуальная система по выявлению потенциально обитаемых экзопланет" &copy; 2023</p>
+        </footer>
+    </div>
+
+    <!-- Plotly зависимости для страницы базы данных -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="script.js"></script>
+    <script src="database.js"></script>
+</body>
+</html> 
