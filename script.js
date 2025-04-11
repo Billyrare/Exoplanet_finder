@@ -9,190 +9,6 @@ let mouseDown = false;
 let rotationSpeed = 0.005;
 let lastMouseX;
 
-// Датасет экзопланет (исходная база данных)
-const exoplanetsDataSet = [
-    {
-        name: "Kepler-442b",
-        radius: 1.34,
-        temperature: 233,
-        density: 5.7,
-        esi: 0.84,
-        potentially_habitable: true,
-        type: "Суперземля"
-    },
-    {
-        name: "Proxima Centauri b",
-        radius: 1.08,
-        temperature: 234,
-        density: 5.9,
-        esi: 0.87,
-        potentially_habitable: true,
-        type: "Каменистая планета"
-    },
-    {
-        name: "TRAPPIST-1e",
-        radius: 0.92,
-        temperature: 251,
-        density: 5.65,
-        esi: 0.91,
-        potentially_habitable: true,
-        type: "Земного типа"
-    },
-    {
-        name: "TOI-700 d",
-        radius: 1.19,
-        temperature: 268,
-        density: 5.3,
-        esi: 0.86,
-        potentially_habitable: true,
-        type: "Земного типа"
-    },
-    {
-        name: "Kepler-62f",
-        radius: 1.41,
-        temperature: 208,
-        density: 5.2,
-        esi: 0.83,
-        potentially_habitable: true,
-        type: "Суперземля"
-    },
-    {
-        name: "Kepler-22b",
-        radius: 2.4,
-        temperature: 262,
-        density: 3.8,
-        esi: 0.71,
-        potentially_habitable: true,
-        type: "Океаническая планета"
-    },
-    {
-        name: "Ross 128 b",
-        radius: 1.1,
-        temperature: 295,
-        density: 5.6,
-        esi: 0.86,
-        potentially_habitable: true,
-        type: "Каменистая планета"
-    },
-    {
-        name: "Gliese 667 Cc",
-        radius: 1.54,
-        temperature: 277,
-        density: 5.3,
-        esi: 0.82,
-        potentially_habitable: true,
-        type: "Суперземля"
-    },
-    {
-        name: "HD 219134 b",
-        radius: 1.6,
-        temperature: 700,
-        density: 6.4,
-        esi: 0.44,
-        potentially_habitable: false,
-        type: "Суперземля"
-    },
-    {
-        name: "K2-18b",
-        radius: 2.6,
-        temperature: 260,
-        density: 3.7,
-        esi: 0.73,
-        potentially_habitable: true,
-        type: "Мини-Нептун"
-    },
-    {
-        name: "WASP-12b",
-        radius: 18.7,
-        temperature: 2250,
-        density: 0.2,
-        esi: 0.01,
-        potentially_habitable: false,
-        type: "Горячий Юпитер"
-    },
-    {
-        name: "TrES-2b",
-        radius: 12.2,
-        temperature: 1498,
-        density: 1.2,
-        esi: 0.02,
-        potentially_habitable: false,
-        type: "Горячий Юпитер"
-    },
-    {
-        name: "Kepler-10b",
-        radius: 1.47,
-        temperature: 1833,
-        density: 8.8,
-        esi: 0.12,
-        potentially_habitable: false,
-        type: "Каменистая планета"
-    },
-    {
-        name: "55 Cancri e",
-        radius: 1.91,
-        temperature: 2400,
-        density: 5.9,
-        esi: 0.05,
-        potentially_habitable: false,
-        type: "Суперземля"
-    },
-    {
-        name: "HD 189733 b",
-        radius: 12.8,
-        temperature: 1200,
-        density: 0.9,
-        esi: 0.04,
-        potentially_habitable: false,
-        type: "Горячий Юпитер"
-    },
-    {
-        name: "Kepler-452b",
-        radius: 1.5,
-        temperature: 295,
-        density: 5.3,
-        esi: 0.83,
-        potentially_habitable: true,
-        type: "Суперземля"
-    },
-    {
-        name: "Kepler-186f",
-        radius: 1.17,
-        temperature: 233,
-        density: 5.8,
-        esi: 0.82,
-        potentially_habitable: true,
-        type: "Земного типа"
-    },
-    {
-        name: "GJ 1132 b",
-        radius: 1.16,
-        temperature: 580,
-        density: 6.0,
-        esi: 0.32,
-        potentially_habitable: false,
-        type: "Каменистая планета"
-    },
-    {
-        name: "Gliese 436 b",
-        radius: 4.3,
-        temperature: 712,
-        density: 2.1,
-        esi: 0.3,
-        potentially_habitable: false,
-        type: "Нептун"
-    },
-    {
-        name: "HD 209458 b",
-        radius: 14.8,
-        temperature: 1450,
-        density: 0.37,
-        esi: 0.02,
-        potentially_habitable: false,
-        type: "Горячий Юпитер"
-    }
-];
-
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     // Загрузка данных
@@ -203,41 +19,66 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Инициализация 3D модели планеты
     initPlanet3D();
-    
-    // Проверка, есть ли планета для анализа из страницы базы данных
-    checkForPlanetToAnalyze();
 });
 
-// Проверка и загрузка планеты для анализа из sessionStorage
-function checkForPlanetToAnalyze() {
-    const planetData = sessionStorage.getItem('planet_to_analyze');
-    
-    if (planetData) {
-        try {
-            const planet = JSON.parse(planetData);
-            
-            // Заполняем форму данными планеты
-            document.getElementById('planet-name').value = planet.name || '';
-            document.getElementById('planet-radius').value = planet.radius || '';
-            document.getElementById('planet-temp').value = planet.temperature || '';
-            document.getElementById('planet-density').value = planet.density || '';
-            
-            // Очищаем sessionStorage, чтобы не анализировать снова при обновлении
-            sessionStorage.removeItem('planet_to_analyze');
-            
-            // Прокручиваем к форме анализа
-            document.querySelector('.search-section').scrollIntoView({ behavior: 'smooth' });
-            
-            // Если есть все необходимые данные, запускаем анализ
-            if (planet.name && planet.radius && planet.temperature && planet.density) {
-                // Задержка для завершения прокрутки и загрузки страницы
-                setTimeout(() => {
-                    analyzePlanet();
-                }, 1000);
-            }
-        } catch (error) {
-            console.error('Ошибка при загрузке данных планеты:', error);
+// Загрузка данных об экзопланетах
+async function fetchExoplanetsData() {
+    try {
+        // Пробуем загрузить данные из основного API
+        const response = await fetch('http://localhost:5000/api/exoplanets');
+        
+        if (!response.ok) {
+            throw new Error('Не удалось загрузить данные с сервера');
         }
+        
+        const data = await response.json();
+        
+        if (!data || data.length === 0) {
+            throw new Error('Получен пустой набор данных');
+        }
+        
+        exoplanetsData = data;
+        console.log('Данные успешно загружены с сервера:', exoplanetsData.length, 'планет');
+        
+        // Инициализируем отфильтрованный список
+        filteredPlanets = [...exoplanetsData];
+        
+        // Отображаем список экзопланет
+        displayPlanetsList(filteredPlanets);
+        
+    } catch (error) {
+        console.error('Ошибка при загрузке данных:', error);
+        
+        try {
+            // Пробуем загрузить данные из резервного JSON файла
+            const response = await fetch('/data/exoplanets.json');
+            if (!response.ok) {
+                throw new Error('Не удалось загрузить резервные данные');
+            }
+            const data = await response.json();
+            exoplanetsData = data;
+            filteredPlanets = [...data];
+            console.log('Данные загружены из резервного файла:', data.length, 'планет');
+            displayPlanetsList(filteredPlanets);
+        } catch (backupError) {
+            console.error('Ошибка при загрузке резервных данных:', backupError);
+            showErrorMessage('Не удалось загрузить данные об экзопланетах. Пожалуйста, убедитесь, что сервер запущен и доступен.');
+            exoplanetsData = [];
+            filteredPlanets = [];
+        }
+    }
+}
+
+// Отображение ошибки загрузки
+function showErrorMessage(message) {
+    const container = document.getElementById('exoplanets-list');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${message}</p>
+            </div>
+        `;
     }
 }
 
@@ -303,39 +144,6 @@ function initEventListeners() {
             filterHabitablePlanets(this.checked);
         });
     }
-}
-
-// Загрузка данных об экзопланетах (из локальной базы или с сервера)
-async function fetchExoplanetsData() {
-    try {
-        // Сначала пробуем загрузить с сервера
-        const response = await fetch('/api/exoplanets');
-        
-        if (!response.ok) {
-            throw new Error('Сервер недоступен');
-        }
-        
-        const data = await response.json();
-        exoplanetsData = data;
-        console.log('Данные успешно загружены с сервера:', exoplanetsData.length, 'планет');
-    } catch (error) {
-        console.warn('Не удалось загрузить данные с сервера, используем локальные данные:', error);
-        // Используем локальную базу данных, если сервер недоступен
-        exoplanetsData = [...exoplanetsDataSet];
-        console.log('Загружены локальные данные:', exoplanetsData.length, 'планет');
-    }
-    
-    // Проверка данных и гарантированное использование локального набора, если данные пусты
-    if (!exoplanetsData || exoplanetsData.length === 0) {
-        console.warn('Данные пусты, принудительное использование локального датасета');
-        exoplanetsData = [...exoplanetsDataSet];
-    }
-    
-    // Инициализируем отфильтрованный список
-    filteredPlanets = [...exoplanetsData];
-    
-    // Отображаем список экзопланет
-    displayPlanetsList(filteredPlanets);
 }
 
 // Константы и эталонные данные
@@ -642,20 +450,20 @@ function generateRecommendations(params) {
     return recommendations;
 }
 
-// Поиск похожих экзопланет из существующих в базе
+// Поиск похожих экзопланет
 function findSimilarPlanets(params) {
     const similar = [];
     
     // Проверим, что у нас есть данные
-    if (!exoplanetsDataSet || exoplanetsDataSet.length === 0) {
+    if (!exoplanetsData || exoplanetsData.length === 0) {
         console.warn('Нет данных о планетах для сравнения');
         return [];
     }
     
-    console.log('Поиск похожих планет среди', exoplanetsDataSet.length, 'планет в базе');
+    console.log('Поиск похожих планет среди', exoplanetsData.length, 'планет в базе');
     console.log('Параметры для сравнения:', params);
     
-    for (const planet of exoplanetsDataSet) {
+    for (const planet of exoplanetsData) {
         const planetParams = {
             radius: planet.radius,
             temperature: planet.temperature,
@@ -664,7 +472,7 @@ function findSimilarPlanets(params) {
         
         const similarity = calculatePlanetSimilarity(params, planetParams);
         
-        if (similarity > 0.6) { // Снижаем порог схожести для получения большего числа результатов
+        if (similarity > 0.6) {
             similar.push({
                 name: planet.name,
                 similarity: Math.round(similarity * 100),
