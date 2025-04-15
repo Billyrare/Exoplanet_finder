@@ -1,226 +1,187 @@
-class ParticleSystem {
-    constructor() {
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.particles = [];
-        this.mouseX = 0;
-        this.mouseY = 0;
-        this.lastX = 0;
-        this.lastY = 0;
-        this.moveSpeed = 0;
-        this.parallaxStrength = 0.5;
+// Enhanced interactive background with nebula effect
+document.addEventListener('DOMContentLoaded', function() {
+    // Create a canvas for the nebula effect
+    createNebulaEffect();
+    
+    // Add smooth parallax effect on mouse movement
+    if (window.innerWidth > 768) { // Only on desktop
+        document.addEventListener('mousemove', function(e) {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            parallaxNebula(mouseX, mouseY);
+        });
+    }
+});
+
+function createNebulaEffect() {
+    // Check if the nebula canvas already exists, if not create it
+    if (!document.getElementById('nebula-canvas')) {
+        const nebulaContainer = document.createElement('div');
+        nebulaContainer.classList.add('nebula-container');
+        nebulaContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        `;
         
-        this.init();
-        this.createParticles();
-        this.bindEvents();
-        this.animate();
+        const nebulaCanvas = document.createElement('canvas');
+        nebulaCanvas.id = 'nebula-canvas';
+        nebulaCanvas.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            filter: blur(30px);
+            transition: transform 0.5s ease-out;
+        `;
+        
+        nebulaContainer.appendChild(nebulaCanvas);
+        document.body.appendChild(nebulaContainer);
+        
+        // Initialize the canvas
+        initNebulaCanvas();
+    }
+}
+
+function initNebulaCanvas() {
+    const canvas = document.getElementById('nebula-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas dimensions to match window
+    resizeCanvas();
+    
+    // Create nebula clouds
+    let clouds = [];
+    
+    // Theme colors matching our CSS variables
+    const colorSchemes = [
+        ['rgba(138, 43, 226, 0.2)', 'rgba(65, 105, 225, 0.15)', 'rgba(0, 191, 255, 0.1)'], // Purple, blue, cyan
+        ['rgba(138, 43, 226, 0.15)', 'rgba(255, 0, 255, 0.08)', 'rgba(0, 191, 255, 0.1)'], // Purple, magenta, cyan
+        ['rgba(65, 105, 225, 0.1)', 'rgba(0, 191, 255, 0.08)', 'rgba(138, 43, 226, 0.12)']  // Blue, cyan, purple
+    ];
+    
+    // Generate initial clouds
+    generateClouds();
+    
+    // Animation loop
+    animateNebula();
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        resizeCanvas();
+        generateClouds(); // Regenerate on resize
+    });
+    
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
     
-    init() {
-        document.querySelector('.stars').appendChild(this.canvas);
-        this.canvas.style.position = 'fixed';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '-1';
+    function generateClouds() {
+        clouds = [];
+        const cloudCount = Math.max(3, Math.min(8, Math.floor(window.innerWidth / 400)));
         
-        this.resize();
-    }
-    
-    resize() {
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-        
-        // Пересоздаем частицы при изменении размера
-        this.createParticles();
-    }
-    
-    createParticles() {
-        this.particles = [];
-        const numberOfParticles = Math.min(150, Math.floor((this.width * this.height) / 10000));
-        
-        for (let i = 0; i < numberOfParticles; i++) {
-            this.particles.push({
-                x: Math.random() * this.width,
-                y: Math.random() * this.height,
-                size: Math.random() * 2 + 1,
-                speedX: Math.random() * 0.1 - 0.05,
-                speedY: Math.random() * 0.1 - 0.05,
-                opacity: Math.random() * 0.5 + 0.3,
-                depth: Math.random() * 3 + 1
+        for (let i = 0; i < cloudCount; i++) {
+            const colorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+            
+            clouds.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: 100 + Math.random() * 200,
+                colors: colorScheme,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
+                opacity: 0.05 + Math.random() * 0.2,
+                rotate: Math.random() * Math.PI * 2,
+                rotateSpeed: (Math.random() - 0.5) * 0.001
             });
         }
     }
     
-    bindEvents() {
-        window.addEventListener('resize', () => this.resize());
+    function drawCloud(cloud) {
+        ctx.save();
+        ctx.translate(cloud.x, cloud.y);
+        ctx.rotate(cloud.rotate);
         
-        window.addEventListener('mousemove', (e) => {
-            this.mouseX = e.clientX;
-            this.mouseY = e.clientY;
-            
-            // Вычисляем скорость движения мыши
-            this.moveSpeed = Math.hypot(this.mouseX - this.lastX, this.mouseY - this.lastY);
-            this.lastX = this.mouseX;
-            this.lastY = this.mouseY;
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, cloud.radius);
+        cloud.colors.forEach((color, i) => {
+            gradient.addColorStop(i / (cloud.colors.length - 1), color);
         });
-    }
-    
-    createNebula(x, y, radius) {
-        const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius);
-        gradient.addColorStop(0, 'rgba(63, 29, 186, 0.1)');
-        gradient.addColorStop(0.4, 'rgba(42, 84, 245, 0.05)');
         gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        return gradient;
+        
+        ctx.globalAlpha = cloud.opacity;
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, cloud.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
     }
     
-    draw() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        
-        // Рисуем туманности
-        this.ctx.fillStyle = this.createNebula(this.width * 0.3, this.height * 0.4, 300);
-        this.ctx.fillRect(0, 0, this.width, this.height);
-        
-        this.ctx.fillStyle = this.createNebula(this.width * 0.7, this.height * 0.6, 400);
-        this.ctx.fillRect(0, 0, this.width, this.height);
-        
-        // Рисуем частицы
-        this.particles.forEach(particle => {
-            const parallaxX = (this.mouseX - this.width/2) * particle.depth * this.parallaxStrength * 0.01;
-            const parallaxY = (this.mouseY - this.height/2) * particle.depth * this.parallaxStrength * 0.01;
+    function updateClouds() {
+        clouds.forEach(cloud => {
+            // Move clouds
+            cloud.x += cloud.vx;
+            cloud.y += cloud.vy;
             
-            this.ctx.beginPath();
-            this.ctx.arc(
-                particle.x + parallaxX,
-                particle.y + parallaxY,
-                particle.size,
-                0,
-                Math.PI * 2
-            );
+            // Rotate clouds
+            cloud.rotate += cloud.rotateSpeed;
             
-            // Добавляем свечение при движении мыши
-            const glowIntensity = Math.min(0.3, this.moveSpeed * 0.01);
-            const glow = this.ctx.createRadialGradient(
-                particle.x + parallaxX,
-                particle.y + parallaxY,
-                0,
-                particle.x + parallaxX,
-                particle.y + parallaxY,
-                particle.size * 2
-            );
-            
-            glow.addColorStop(0, `rgba(255, 255, 255, ${particle.opacity + glowIntensity})`);
-            glow.addColorStop(0.4, `rgba(255, 255, 255, ${(particle.opacity + glowIntensity) * 0.6})`);
-            glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            
-            this.ctx.fillStyle = glow;
-            this.ctx.fill();
+            // Wrap around edges with buffer
+            const buffer = cloud.radius;
+            if (cloud.x < -buffer) cloud.x = canvas.width + buffer;
+            if (cloud.x > canvas.width + buffer) cloud.x = -buffer;
+            if (cloud.y < -buffer) cloud.y = canvas.height + buffer;
+            if (cloud.y > canvas.height + buffer) cloud.y = -buffer;
         });
     }
     
-    update() {
-        this.particles.forEach(particle => {
-            particle.x += particle.speedX;
-            particle.y += particle.speedY;
-            
-            // Возвращаем частицы в пределы экрана
-            if (particle.x < -50) particle.x = this.width + 50;
-            if (particle.x > this.width + 50) particle.x = -50;
-            if (particle.y < -50) particle.y = this.height + 50;
-            if (particle.y > this.height + 50) particle.y = -50;
-            
-            // Пульсация прозрачности
-            particle.opacity += Math.sin(Date.now() * 0.001 * particle.depth) * 0.002;
-        });
-    }
-    
-    animate() {
-        this.update();
-        this.draw();
-        requestAnimationFrame(() => this.animate());
+    function animateNebula() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updateClouds();
+        
+        // Draw clouds
+        clouds.forEach(drawCloud);
+        
+        // Continue animation
+        requestAnimationFrame(animateNebula);
     }
 }
 
-// Создаем эффект падающих звезд
-class ShootingStars {
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.stars = [];
-        this.lastStarTime = 0;
-        this.minStarInterval = 4000; // Увеличиваем интервал между падающими звездами
-        
-        this.animate();
-    }
+function parallaxNebula(mouseX, mouseY) {
+    const nebulaCanvas = document.getElementById('nebula-canvas');
+    if (!nebulaCanvas) return;
     
-    createStar() {
-        const now = Date.now();
-        if (now - this.lastStarTime < this.minStarInterval) return;
-        
-        const star = {
-            x: Math.random() * this.canvas.width,
-            y: 0,
-            length: Math.random() * 80 + 50,
-            speed: Math.random() * 8 + 5, // Уменьшаем скорость падающих звезд
-            opacity: 1
-        };
-        
-        this.stars.push(star);
-        this.lastStarTime = now;
-    }
+    // Calculate movement based on mouse position
+    // Center is 0,0, edges are -1,1 (inverted for parallax effect)
+    const moveX = (0.5 - mouseX) * 20; 
+    const moveY = (0.5 - mouseY) * 20;
     
-    draw() {
-        this.stars.forEach((star, index) => {
-            this.ctx.beginPath();
-            this.ctx.moveTo(star.x, star.y);
-            
-            // Создаем градиент для следа звезды
-            const gradient = this.ctx.createLinearGradient(
-                star.x, star.y,
-                star.x + star.length * Math.cos(Math.PI / 4),
-                star.y + star.length * Math.sin(Math.PI / 4)
-            );
-            
-            gradient.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`);
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            
-            this.ctx.strokeStyle = gradient;
-            this.ctx.lineWidth = 2;
-            this.ctx.lineTo(
-                star.x + star.length * Math.cos(Math.PI / 4),
-                star.y + star.length * Math.sin(Math.PI / 4)
-            );
-            this.ctx.stroke();
-        });
-    }
-    
-    update() {
-        if (Math.random() < 0.02) this.createStar();
-        
-        this.stars.forEach((star, index) => {
-            star.x += star.speed * Math.cos(Math.PI / 4);
-            star.y += star.speed * Math.sin(Math.PI / 4);
-            star.opacity -= 0.01;
-            
-            if (star.opacity <= 0 || star.y > this.canvas.height || star.x > this.canvas.width) {
-                this.stars.splice(index, 1);
-            }
-        });
-    }
-    
-    animate() {
-        this.update();
-        this.draw();
-        requestAnimationFrame(() => this.animate());
-    }
+    // Apply movement with smooth transition
+    nebulaCanvas.style.transform = `translate(${moveX}px, ${moveY}px)`;
 }
 
-// Инициализация после загрузки страницы
-document.addEventListener('DOMContentLoaded', () => {
-    const particleSystem = new ParticleSystem();
-    const shootingStars = new ShootingStars(particleSystem.canvas);
-}); 
+// Add subtle animation for touch devices
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    function animateNebulaForTouch() {
+        const time = Date.now() * 0.001;
+        const moveX = Math.sin(time * 0.3) * 10;
+        const moveY = Math.cos(time * 0.2) * 10;
+        
+        const nebulaCanvas = document.getElementById('nebula-canvas');
+        if (nebulaCanvas) {
+            nebulaCanvas.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        }
+        
+        requestAnimationFrame(animateNebulaForTouch);
+    }
+    
+    window.addEventListener('load', animateNebulaForTouch);
+} 

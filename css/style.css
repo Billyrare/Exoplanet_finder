@@ -1,0 +1,1361 @@
+/* Основные стили и сброс */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+}
+
+:root {
+    --primary-color: #6a11cb;
+    --secondary-color: #2575fc;
+    --accent-color: #00ff88;
+    --text-color: #e0e0ff;
+    --bg-dark: #0a0a1a;
+    --card-bg: rgba(25, 25, 40, 0.8);
+    --success-color: #00c853;
+    --warning-color: #ff9100;
+    --danger-color: #f44336;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-color);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Улучшенный анимированный фон */
+.stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: 
+        radial-gradient(1px 1px at 25px 25px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 50px 50px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(2px 2px at 125px 125px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(2px 2px at 75px 75px, white, rgba(255, 255, 255, 0)),
+        linear-gradient(to bottom, #0a0a2e, #1a1a3e);
+    background-size: 200px 200px, 150px 150px, 100px 100px, 200px 200px, 100% 100%;
+    animation: twinkle 15s ease-in-out infinite alternate;
+}
+
+.stars::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(76, 0, 255, 0.1) 0%, transparent 60%),
+        radial-gradient(circle at 20% 30%, rgba(0, 255, 149, 0.1) 0%, transparent 50%);
+    animation: aurora 20s ease infinite;
+}
+
+@keyframes aurora {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-5%, 5%) scale(1.2); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    padding-top: 1rem;
+}
+
+/* Общие стили для рамок */
+.form-container, section, .planet-card, .chart-card, .database-controls, .search-panel, .stat-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-container::before, section::before, .planet-card::before, .chart-card::before, .database-controls::before, .search-panel::before, .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: linear-gradient(120deg, 
+        rgba(106, 17, 203, 0.5), 
+        rgba(37, 117, 252, 0.5), 
+        rgba(0, 255, 136, 0.5)
+    ) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    animation: borderGlow 4s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.01);
+    }
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+}
+
+/* Стилизация полей ввода */
+input, select, textarea {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(15, 15, 35, 0.6);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: transparent;
+    outline: none;
+    box-shadow: 
+        0 0 0 1px rgba(0, 255, 136, 0.3),
+        0 0 15px rgba(0, 255, 136, 0.2),
+        inset 0 0 5px rgba(0, 255, 136, 0.1);
+}
+
+/* Стилизация кнопок */
+.glow-btn {
+    border: none;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: linear-gradient(45deg, 
+        var(--primary-color), 
+        var(--secondary-color)
+    );
+    z-index: 1;
+}
+
+.glow-btn::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: rgba(15, 15, 35, 0.9);
+    border-radius: 11px;
+    z-index: -1;
+}
+
+.glow-btn:hover::after {
+    background: rgba(15, 15, 35, 0.7);
+}
+
+/* Стилизация заголовка */
+header {
+    border: none;
+    position: relative;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    border-radius: 20px;
+    background: rgba(25, 25, 40, 0.8);
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        rgba(106, 17, 203, 0.5), 
+        rgba(37, 117, 252, 0.5), 
+        rgba(0, 255, 136, 0.5)
+    );
+    border-radius: 22px;
+    z-index: -1;
+    animation: headerGlow 6s ease-in-out infinite;
+}
+
+@keyframes headerGlow {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* Стилизация навигации */
+.nav-links li a {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-links li a:hover {
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+.nav-links li a.active {
+    border-color: rgba(106, 17, 203, 0.5);
+    box-shadow: 0 0 20px rgba(106, 17, 203, 0.3);
+}
+
+/* Стилизация карточек планет */
+.planet-visual {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+}
+
+.planet-visual::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, 
+        rgba(106, 17, 203, 0.5), 
+        rgba(37, 117, 252, 0.5), 
+        rgba(0, 255, 136, 0.5)
+    );
+    border-radius: 50%;
+    z-index: -1;
+    animation: planetGlow 4s ease-in-out infinite;
+}
+
+@keyframes planetGlow {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.05) rotate(180deg);
+        opacity: 0.8;
+    }
+}
+
+/* Стили для контейнера 3D модели */
+#planet-3d-container {
+    width: 100%;
+    height: 100%;
+    cursor: move;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Информационная подсказка для взаимодействия */
+.planet-interaction-hint {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: #4fc3f7;
+    opacity: 0.8;
+}
+
+.planet-info {
+    flex: 1;
+}
+
+.planet-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.progress-bar {
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    margin: 0.5rem 0 1.5rem;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--danger-color), var(--warning-color), var(--success-color));
+    width: 0%;
+    transition: width 1s ease-in-out;
+}
+
+.planet-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.planet-details p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.assessment {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.assessment h4 {
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Похожие планеты */
+.similar-planets {
+    padding: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.similar-planets h3 {
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    color: #64ffda;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.3);
+    padding-bottom: 5px;
+}
+
+.planets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.planets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    width: 100%;
+}
+
+.planet-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.planet-item.habitable {
+    border-color: rgba(65, 220, 120, 0.3);
+    box-shadow: 0 0 15px rgba(65, 220, 120, 0.1);
+}
+
+.planet-item.non-habitable {
+    border-color: rgba(220, 65, 65, 0.3);
+    box-shadow: 0 0 15px rgba(220, 65, 65, 0.1);
+}
+
+.planet-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.planet-item:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.esi-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.habitable .esi-badge {
+    background: linear-gradient(45deg, rgba(65, 220, 120, 0.7), rgba(65, 220, 120, 0.3));
+    color: white;
+}
+
+.non-habitable .esi-badge {
+    background: linear-gradient(45deg, rgba(220, 65, 65, 0.7), rgba(220, 65, 65, 0.3));
+    color: white;
+}
+
+.planet-item h4 {
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.planet-item p {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.planet-item .glow-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+#save-btn {
+    margin-top: 1.5rem;
+}
+
+/* База данных экзопланет */
+.database-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar {
+    flex: 1;
+    display: flex;
+    min-width: 250px;
+}
+
+.search-bar input {
+    flex: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.search-bar button {
+    padding: 0 1rem;
+    background-color: var(--secondary-color);
+    border: none;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+.filter-options {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.database-container {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+#exoplanets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    width: 100%;
+}
+
+.database-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.database-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.database-container::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 3px;
+}
+
+.planet-type {
+    font-size: 0.8rem;
+    margin-top: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.planet-type.суперземля {
+    background-color: rgba(65, 185, 120, 0.2);
+    color: #41b978;
+}
+
+.planet-type.земного-типа {
+    background-color: rgba(70, 200, 150, 0.2);
+    color: #46c896;
+}
+
+.planet-type.каменистая-планета {
+    background-color: rgba(200, 150, 70, 0.2);
+    color: #c89646;
+}
+
+.planet-type.горячий-юпитер {
+    background-color: rgba(200, 70, 70, 0.2);
+    color: #c84646;
+}
+
+.planet-type.мини-нептун, 
+.planet-type.нептун {
+    background-color: rgba(70, 120, 200, 0.2);
+    color: #4678c8;
+}
+
+.planet-type.океаническая-планета {
+    background-color: rgba(70, 180, 200, 0.2);
+    color: #46b4c8;
+}
+
+/* Футер */
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1.5rem;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Добавление стилей для графиков */
+.visualization-container {
+    margin-top: 2rem;
+    background-color: rgba(10, 10, 35, 0.8);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+.visualization-container h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #4fc3f7;
+    font-size: 1.6rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.advanced-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background-color: rgba(15, 15, 40, 0.7);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+}
+
+/* Новые стили для ESI-индикатора и других улучшений */
+.primary-chart {
+    margin-bottom: 1.5rem;
+    background-color: rgba(25, 25, 50, 0.8);
+    padding: 1.5rem;
+    border: 1px solid rgba(79, 195, 247, 0.3);
+}
+
+.primary-chart .chart-container {
+    min-height: 280px;
+}
+
+/* Увеличение отступов для радарной диаграммы, чтобы текст не перекрывался */
+#earth-comparison-chart {
+    padding: 20px;
+}
+
+/* Высота для графиков разной сложности */
+#atmosphere-chart, #earth-comparison-chart {
+    min-height: 320px;
+}
+
+#water-indicator, #life-sustainability-chart {
+    min-height: 300px;
+}
+
+#planets-distribution {
+    min-height: 400px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+    }
+    
+    #planets-distribution {
+        min-height: 350px;
+    }
+}
+
+/* Стили для рекомендаций */
+.recommendations {
+    margin-top: 0;
+}
+
+.recommendations h4 {
+    display: none;
+}
+
+.recommendations ul {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.recommendations li {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 255, 218, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 0.9rem;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+
+.recommendations li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(100, 255, 218, 0.4);
+}
+
+.recommendations li i {
+    color: #64ffda;
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+.recommendations li.no-recommendations {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+/* Цветовая кодировка для разных типов рекомендаций */
+.recommendations li i.fa-temperature-high {
+    color: #ff7675;
+}
+
+.recommendations li i.fa-weight-hanging {
+    color: #74b9ff;
+}
+
+.recommendations li i.fa-atom {
+    color: #a29bfe;
+}
+
+.recommendations li i.fa-cloud {
+    color: #81ecec;
+}
+
+.recommendations li i.fa-magnet {
+    color: #fd79a8;
+}
+
+.recommendations li i.fa-tint {
+    color: #0984e3;
+}
+
+.recommendations li i.fa-globe {
+    color: #55efc4;
+}
+
+/* Бейджи-индикаторы важности рекомендаций */
+.recommendations li {
+    padding-right: 25px;
+}
+
+.recommendations li::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 5px;
+    border-radius: 0 8px 8px 0;
+    background-color: rgba(100, 255, 218, 0.3);
+}
+
+.recommendations li:hover::after {
+    background-color: rgba(100, 255, 218, 0.7);
+    width: 7px;
+}
+
+/* Медиа-запрос для планшетов */
+@media (max-width: 1024px) {
+    .recommendations ul {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .recommendations ul {
+        grid-template-columns: 1fr;
+    }
+    
+    .planets-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Стилизация отдельной карточки для рекомендаций */
+.recommendations-card {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: rgba(10, 10, 35, 0.7);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.recommendations-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.recommendations-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.recommendations-card h3 {
+    color: #64ffda;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.3);
+    padding-bottom: 8px;
+}
+
+/* Стили для навигационной панели */
+.navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background-color: rgba(10, 10, 35, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.logo i {
+    color: #64ffda;
+    margin-right: 10px;
+    font-size: 1.6rem;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links li a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-links li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-links li a.active {
+    color: #64ffda;
+    border-bottom: 2px solid #64ffda;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+/* Медиа-запрос для мобильного меню */
+@media (max-width: 768px) {
+    .nav-links {
+        position: fixed;
+        top: 60px;
+        left: -100%;
+        flex-direction: column;
+        background-color: rgba(10, 10, 35, 0.95);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        padding: 1rem 0;
+        gap: 0;
+    }
+    
+    .nav-links.active {
+        left: 0;
+    }
+    
+    .nav-links li {
+        margin: 0;
+        padding: 1rem 0;
+    }
+    
+    .nav-links li a {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+}
+
+/* Стили для страницы базы данных экзопланет */
+.database-intro {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: rgba(15, 15, 40, 0.6);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.database-intro p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+.database-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.stat-card {
+    background: rgba(15, 15, 40, 0.7);
+    border-radius: 8px;
+    padding: 1.2rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card i {
+    font-size: 2rem;
+    margin-right: 1rem;
+    color: #64ffda;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-info span {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 0.3rem;
+}
+
+.stat-info p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.exoplanets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.2rem;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #64ffda;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+}
+
+.pagination button {
+    background-color: rgba(15, 15, 40, 0.7);
+    border: 1px solid rgba(100, 255, 218, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.pagination button:not(:disabled):hover {
+    background-color: rgba(100, 255, 218, 0.2);
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#page-info {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.visualization-section {
+    margin-top: 3rem;
+}
+
+.visualization-section h2 {
+    color: #64ffda;
+    margin-bottom: 1.5rem;
+}
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.charts-container .chart-card {
+    background-color: rgba(15, 15, 40, 0.7);
+    border-radius: 8px;
+    padding: 1.2rem;
+    min-height: 350px;
+}
+
+.charts-container .chart-card h3 {
+    color: #4fc3f7;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.charts-container .chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .database-controls {
+        flex-direction: column;
+    }
+    
+    .filter-options {
+        margin-top: 1rem;
+        width: 100%;
+    }
+}
+
+/* Стили для базы данных экзопланет */
+#database-container {
+    background-color: rgba(11, 23, 39, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 20px rgba(0, 100, 200, 0.5);
+}
+
+#database-container h2 {
+    color: #4dd0e1;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 2rem;
+    text-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
+}
+
+.database-controls {
+    background-color: rgba(15, 32, 53, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 150, 255, 0.3);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #0a1929;
+    color: #4dd0e1;
+    border-color: #1e3a5f;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    border-color: #1e3a5f;
+    padding: 10px;
+}
+
+.table-dark {
+    background-color: #0f2035;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(77, 208, 225, 0.1);
+}
+
+.stats-container {
+    background-color: rgba(15, 32, 53, 0.7);
+    border-radius: 8px;
+    padding: 12px;
+    color: #a9d6e5;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: rgba(11, 23, 39, 0.7);
+    border-radius: 5px;
+    border-left: 3px solid #4dd0e1;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+}
+
+.habitability-habitable {
+    color: #4dd0e1;
+    font-weight: bold;
+}
+
+.habitability-moderate {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.habitability-non-habitable {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.analyze-btn {
+    padding: 3px 8px;
+    background-color: rgba(77, 208, 225, 0.2);
+    border: 1px solid #4dd0e1;
+    color: #4dd0e1;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.analyze-btn:hover {
+    background-color: rgba(77, 208, 225, 0.4);
+    box-shadow: 0 0 10px rgba(77, 208, 225, 0.5);
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.search-container input {
+    background-color: rgba(11, 23, 39, 0.7);
+    border: 1px solid #2c3e50;
+    color: #a9d6e5;
+    padding-right: 40px;
+}
+
+.search-container i {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    color: #4dd0e1;
+}
+
+.planet-type-filter {
+    margin-right: 5px;
+    background-color: rgba(11, 23, 39, 0.7);
+    border: 1px solid #4dd0e1;
+    color: #a9d6e5;
+}
+
+.planet-type-filter.active {
+    background-color: rgba(77, 208, 225, 0.3);
+    color: #fff;
+}
+
+/* Улучшение таблицы */
+#database-container .table {
+    background-color: rgba(11, 23, 39, 0.7);
+    color: #a9d6e5;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#database-container .table th {
+    background-color: rgba(15, 32, 53, 0.9);
+    color: #4dd0e1;
+    border-color: #2c3e50;
+}
+
+#database-container .table td {
+    border-color: #2c3e50;
+}
+
+#database-container .table-hover tbody tr:hover {
+    background-color: rgba(77, 208, 225, 0.1);
+    cursor: pointer;
+}
+
+/* Стили для поисковой панели в базе данных */
+.search-panel {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(13, 17, 23, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-panel input[type="text"] {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #30363d;
+    border-radius: 5px;
+    background: rgba(13, 17, 23, 0.95);
+    color: #fff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.search-panel input[type="text"]:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+    outline: none;
+}
+
+.search-panel select {
+    padding: 12px 35px 12px 15px;
+    border: 1px solid #30363d;
+    border-radius: 5px;
+    background: rgba(13, 17, 23, 0.95);
+    color: #fff;
+    font-size: 16px;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-panel select:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+    outline: none;
+}
+
+.search-panel button {
+    padding: 12px 20px;
+    background: linear-gradient(45deg, #2196F3, #00BCD4);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-panel button:hover {
+    background: linear-gradient(45deg, #1976D2, #0097A7);
+    transform: translateY(-1px);
+}
+
+.search-panel button i {
+    font-size: 14px;
+}
+
+/* Стили для сортировки */
+.sort-btn {
+    padding: 12px 20px;
+    background: linear-gradient(45deg, #9C27B0, #673AB7);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-btn:hover {
+    background: linear-gradient(45deg, #7B1FA2, #512DA8);
+    transform: translateY(-1px);
+}
+
+.sort-btn i {
+    font-size: 14px;
+}
+
+/* Стили для выпадающего списка фильтрации */
+#filter-type option {
+    background: #1a1f24;
+    color: #fff;
+    padding: 8px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .search-panel {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-panel input[type="text"],
+    .search-panel select,
+    .search-panel button {
+        width: 100%;
+    }
+}

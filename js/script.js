@@ -19,45 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Инициализация 3D модели планеты
     initPlanet3D();
-    
-    // Mobile menu toggle functionality
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', function() {
-            navLinks.classList.toggle('active');
-            
-            // Add animation for menu items
-            const menuItems = navLinks.querySelectorAll('li');
-            menuItems.forEach((item, index) => {
-                // Reset animation
-                item.style.animation = 'none';
-                item.offsetHeight; // Trigger reflow
-                
-                if (navLinks.classList.contains('active')) {
-                    // Add animation with sequential delay
-                    item.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1 + 0.3}s`;
-                } else {
-                    item.style.animation = '';
-                }
-            });
-        });
-        
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.nav-links') && !event.target.closest('.menu-toggle')) {
-                if (navLinks.classList.contains('active')) {
-                    navLinks.classList.remove('active');
-                    
-                    const menuItems = navLinks.querySelectorAll('li');
-                    menuItems.forEach(item => {
-                        item.style.animation = '';
-                    });
-                }
-            }
-        });
-    }
 });
 
 // Загрузка данных об экзопланетах
