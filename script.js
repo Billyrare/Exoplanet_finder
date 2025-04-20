@@ -9,6 +9,15 @@ let mouseDown = false;
 let rotationSpeed = 0.005;
 let lastMouseX;
 
+let currentStep = 0;
+const totalSteps = 4;
+const steps = [
+    'data-collection',
+    'parameter-calculation',
+    'indicator-analysis',
+    'result-formation'
+];
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     // Загрузка данных
@@ -63,48 +72,41 @@ document.addEventListener('DOMContentLoaded', function() {
 // Загрузка данных об экзопланетах
 async function fetchExoplanetsData() {
     try {
-        // Пробуем загрузить данные из основного API
-        const response = await fetch('http://localhost:5000/api/exoplanets');
-        
-        if (!response.ok) {
-            throw new Error('Не удалось загрузить данные с сервера');
-        }
-        
-        const data = await response.json();
-        
-        if (!data || data.length === 0) {
-            throw new Error('Получен пустой набор данных');
-        }
-        
-        exoplanetsData = data;
-        console.log('Данные успешно загружены с сервера:', exoplanetsData.length, 'планет');
-        
-        // Инициализируем отфильтрованный список
-        filteredPlanets = [...exoplanetsData];
+        // Создаем базовый набор данных для тестирования
+        const defaultData = [
+            {
+                name: "Kepler-442b",
+                radius: 1.34,
+                temperature: 233,
+                density: 5.0,
+                potentially_habitable: true,
+                esi: 0.84
+            },
+            {
+                name: "Kepler-186f",
+                radius: 1.17,
+                temperature: 188,
+                density: 4.7,
+                potentially_habitable: true,
+                esi: 0.78
+            }
+        ];
+
+        // Используем тестовые данные
+        exoplanetsData = defaultData;
+        filteredPlanets = [...defaultData];
+        console.log('Используем тестовые данные:', exoplanetsData.length, 'планет');
         
         // Отображаем список экзопланет
-        displayPlanetsList(filteredPlanets);
+        const container = document.getElementById('exoplanets-list');
+        if (container) {
+            displayPlanetsList(filteredPlanets);
+        }
         
     } catch (error) {
-        console.error('Ошибка при загрузке данных:', error);
-        
-        try {
-            // Пробуем загрузить данные из резервного JSON файла
-            const response = await fetch('/data/exoplanets.json');
-            if (!response.ok) {
-                throw new Error('Не удалось загрузить резервные данные');
-            }
-            const data = await response.json();
-            exoplanetsData = data;
-            filteredPlanets = [...data];
-            console.log('Данные загружены из резервного файла:', data.length, 'планет');
-            displayPlanetsList(filteredPlanets);
-        } catch (backupError) {
-            console.error('Ошибка при загрузке резервных данных:', backupError);
-            showErrorMessage('Не удалось загрузить данные об экзопланетах. Пожалуйста, убедитесь, что сервер запущен и доступен.');
-            exoplanetsData = [];
-            filteredPlanets = [];
-        }
+        console.error('Ошибка при инициализации данных:', error);
+        exoplanetsData = [];
+        filteredPlanets = [];
     }
 }
 
@@ -126,7 +128,10 @@ function initEventListeners() {
     // Обработчик кнопки анализа
     const analyzeBtn = document.getElementById('analyze-btn');
     if (analyzeBtn) {
-        analyzeBtn.addEventListener('click', analyzePlanet);
+        analyzeBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            analyzePlanet();
+        });
     }
     
     // Обработчик очистки результатов
@@ -144,14 +149,10 @@ function initEventListeners() {
     if (menuToggle && navLinks) {
         menuToggle.addEventListener('click', function() {
             navLinks.classList.toggle('active');
-            // Меняем иконку при открытии/закрытии меню
             const icon = this.querySelector('i');
-            if (icon.classList.contains('fa-bars')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+            if (icon) {
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
             }
         });
     }
@@ -243,58 +244,82 @@ function analyzeAllPlanetData(esiValue, params) {
 
 // Анализ экзопланеты по введенным параметрам
 async function analyzePlanet() {
-    // Получение значений из формы
-    const name = document.getElementById('planet-name').value || 'Неизвестная планета';
-    const radius = parseFloat(document.getElementById('planet-radius').value);
-    const temperature = parseFloat(document.getElementById('planet-temp').value);
-    const relativeDensity = parseFloat(document.getElementById('planet-density').value);
-    
-    // Валидация
-    if (isNaN(radius) || isNaN(temperature) || isNaN(relativeDensity)) {
-        alert('Пожалуйста, введите корректные числовые значения для всех параметров');
-        return;
+    try {
+        // Получаем элементы формы
+        const nameInput = document.getElementById('planet-name');
+        const radiusInput = document.getElementById('planet-radius');
+        const tempInput = document.getElementById('planet-temp');
+        const densityInput = document.getElementById('planet-density');
+
+        // Проверяем наличие всех необходимых элементов
+        if (!nameInput || !radiusInput || !tempInput || !densityInput) {
+            throw new Error('Не найдены все необходимые поля формы');
+        }
+
+        // Получение значений из формы
+        const name = nameInput.value || 'Неизвестная планета';
+        const radius = parseFloat(radiusInput.value);
+        const temperature = parseFloat(tempInput.value);
+        const relativeDensity = parseFloat(densityInput.value);
+        
+        // Валидация
+        if (isNaN(radius) || isNaN(temperature) || isNaN(relativeDensity)) {
+            throw new Error('Пожалуйста, введите корректные числовые значения для всех параметров');
+        }
+
+        // Показываем оверлей анализа
+        showAnalysisOverlay();
+        
+        // Запускаем анимацию прогресса
+        currentStep = 0;
+        updateAnalysisProgress();
+        
+        // Конвертируем относительную плотность в абсолютную (г/см³)
+        const absoluteDensity = relativeDensity * EARTH_PARAMS.density;
+        
+        // Параметры планеты
+        const params = {
+            radius,
+            temperature,
+            density: absoluteDensity
+        };
+        
+        // Расчет ESI
+        const esiValue = calculateESI(params);
+        
+        // Комплексный анализ планеты
+        const analysisResults = analyzeAllPlanetData(esiValue, params);
+        
+        // Формируем окончательный результат
+        const result = {
+            name: name,
+            radius: radius,
+            temperature: temperature,
+            density: relativeDensity,
+            absoluteDensity: absoluteDensity,
+            esi: esiValue,
+            habitability_score: Math.round(esiValue * 100),
+            classification: analysisResults.classification,
+            similarityScores: analysisResults.similarityScores,
+            habitabilityFactors: analysisResults.habitabilityFactors,
+            recommendations: analysisResults.recommendations,
+            atmosphereComposition: analysisResults.atmosphereComposition,
+            waterProbability: analysisResults.waterProbability,
+            lifeSustainability: analysisResults.lifeSustainability,
+            similarPlanets: analysisResults.similarPlanets
+        };
+
+        // Отображаем результаты
+        displayResults(result);
+        
+        // Инициализируем графики
+        initChartsVisualization(result);
+
+    } catch (error) {
+        console.error('Ошибка при анализе планеты:', error);
+        hideAnalysisOverlay();
+        alert(error.message);
     }
-    
-    // Конвертируем относительную плотность в абсолютную (г/см³)
-    const absoluteDensity = relativeDensity * EARTH_PARAMS.density;
-    
-    // Параметры планеты
-    const params = {
-        radius,
-        temperature,
-        density: absoluteDensity
-    };
-    
-    // Расчет ESI
-    const esiValue = calculateESI(params);
-    
-    // Комплексный анализ планеты
-    const analysisResults = analyzeAllPlanetData(esiValue, params);
-    
-    // Формируем окончательный результат
-    const result = {
-        name: name,
-        radius: radius,
-        temperature: temperature,
-        density: relativeDensity, // Сохраняем относительную плотность для отображения
-        absoluteDensity: absoluteDensity, // Сохраняем абсолютную плотность для расчетов
-        esi: esiValue,
-        habitability_score: Math.round(esiValue * 100),
-        classification: analysisResults.classification,
-        similarityScores: analysisResults.similarityScores,
-        habitabilityFactors: analysisResults.habitabilityFactors,
-        recommendations: analysisResults.recommendations,
-        atmosphereComposition: analysisResults.atmosphereComposition,
-        waterProbability: analysisResults.waterProbability,
-        lifeSustainability: analysisResults.lifeSustainability,
-        similarPlanets: analysisResults.similarPlanets
-    };
-    
-    // Отображаем результаты
-    displayResults(result);
-    
-    // Инициализируем графики
-    initChartsVisualization(result);
 }
 
 // Расчет состава атмосферы на основе температуры и радиуса
@@ -752,9 +777,9 @@ function displaySimilarPlanets(planets) {
 function displayPlanetsList(planets) {
     const container = document.getElementById('exoplanets-list');
     
-    // Проверка существования контейнера
+    // Если контейнер не найден, просто пропускаем отображение
     if (!container) {
-        console.error('Контейнер для списка планет не найден');
+        console.log('Контейнер для списка планет не найден - пропускаем отображение');
         return;
     }
     
@@ -763,46 +788,28 @@ function displayPlanetsList(planets) {
     
     // Проверка наличия планет
     if (!planets || planets.length === 0) {
-        container.innerHTML = '<p>Нет доступных данных о планетах. Пожалуйста, обновите страницу или проверьте соединение с сервером.</p>';
-        // Принудительно используем локальные данные
-        planets = [...exoplanetsDataSet];
-        console.log('Принудительное отображение локальных данных, так как список планет пуст');
+        container.innerHTML = '<p>Нет доступных данных о планетах.</p>';
+        return;
     }
     
     console.log('Отображаем', planets.length, 'планет');
     
-    // Отображение каждой планеты напрямую в контейнере
+    // Отображение каждой планеты
     planets.forEach(planet => {
-        // Проверка корректности данных планеты
-        if (!planet || !planet.name) {
-            console.warn('Некорректные данные планеты:', planet);
-            return;
-        }
+        if (!planet || !planet.name) return;
         
         const habitabilityClass = planet.potentially_habitable ? 'habitable' : 'non-habitable';
         
         const planetElement = document.createElement('div');
         planetElement.className = `planet-item ${habitabilityClass}`;
         
-        // Добавляем обработчик клика на всю карточку
-        planetElement.addEventListener('click', () => {
-            document.getElementById('planet-name').value = planet.name;
-            document.getElementById('planet-radius').value = planet.radius;
-            document.getElementById('planet-temp').value = planet.temperature;
-            document.getElementById('planet-density').value = planet.density;
-            analyzePlanet();
-        });
-        
-        // Тип планеты
-        const typeClass = planet.type ? planet.type.toLowerCase().replace(/\s+/g, '-') : '';
-        
         planetElement.innerHTML = `
             <h4>${planet.name}</h4>
             <p>Радиус: ${planet.radius} R⊕</p>
             <p>Температура: ${planet.temperature} K</p>
             <p>Плотность: ${planet.density} г/см³</p>
-            ${planet.type ? `<p class="planet-type ${typeClass}">Тип: ${planet.type}</p>` : ''}
-            <span class="esi-badge">ESI: ${typeof planet.esi === 'number' ? planet.esi.toFixed(2) : planet.esi}</span>
+            ${planet.type ? `<p class="planet-type ${planet.type.toLowerCase().replace(/\s+/g, '-')}">Тип: ${planet.type}</p>` : ''}
+            <span class="esi-badge">ESI: ${typeof planet.esi === 'number' ? planet.esi.toFixed(2) : 'N/A'}</span>
         `;
         
         container.appendChild(planetElement);
@@ -1722,6 +1729,57 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     
     renderer.setSize(width, height);
+}
+
+function showAnalysisOverlay() {
+    const overlay = document.querySelector('.analysis-overlay');
+    overlay.classList.remove('hidden');
+}
+
+function hideAnalysisOverlay() {
+    const overlay = document.querySelector('.analysis-overlay');
+    overlay.classList.add('hidden');
+    resetAnalysisProgress();
+}
+
+function resetAnalysisProgress() {
+    currentStep = 0;
+    updateProgressBar(0);
+    steps.forEach(stepId => {
+        const step = document.getElementById(stepId);
+        step.classList.remove('active', 'completed');
+    });
+}
+
+function updateAnalysisProgress() {
+    if (currentStep >= totalSteps) {
+        setTimeout(hideAnalysisOverlay, 1000);
+        return;
+    }
+
+    const progress = (currentStep / totalSteps) * 100;
+    updateProgressBar(progress);
+
+    steps.forEach((stepId, index) => {
+        const step = document.getElementById(stepId);
+        if (index < currentStep) {
+            step.classList.remove('active');
+            step.classList.add('completed');
+        } else if (index === currentStep) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+        } else {
+            step.classList.remove('active', 'completed');
+        }
+    });
+
+    currentStep++;
+    setTimeout(updateAnalysisProgress, 1500);
+}
+
+function updateProgressBar(progress) {
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.style.width = `${progress}%`;
 }
 
 // Экспорт функций для тестирования
