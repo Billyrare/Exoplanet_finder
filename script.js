@@ -1539,124 +1539,62 @@ function createPlanetModel(planetData) {
 // Определение текстур в зависимости от параметров планеты
 function getPlanetTexture(planetData) {
     const temp = planetData.temperature;
-    const radius = planetData.radius;
-    const density = planetData.density / EARTH_PARAMS.density; // Плотность относительно земной
     const esi = planetData.esi;
-    
+
     // Земноподобная планета с высоким ESI
     if (esi >= 0.8) {
         return {
-            surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
-            bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
-            specular: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
-            clouds: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds.jpg',
+            surface: 'textures/planets/earthlike.jpg',
+            bump: 'textures/planets/earthlike_bump.jpg',
+            specular: 'textures/planets/earthlike_specular.jpg',
+            clouds: 'textures/planets/clouds.jpg',
             shininess: 10
         };
     }
-    // Планета с океанами (умеренная температура, высокая плотность)
-    else if (temp >= 273 && temp <= 323 && density >= 0.8) {
+    
+    // Очень холодная ледяная планета (< 200K)
+    if (temp < 200) {
         return {
-            surface: 'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg',
-            bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
-            clouds: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds.jpg',
+            surface: 'textures/planets/ice.jpg',
+            bump: 'textures/planets/ice_bump.jpg',
+            shininess: 15
+        };
+    }
+    
+    // Холодная планета (200-273K)
+    if (temp < 273) {
+        return {
+            surface: 'textures/planets/cold.jpg',
+            bump: 'textures/planets/cold_bump.jpg',
+            shininess: 5
+        };
+    }
+    
+    // Умеренная планета (273-323K)
+    if (temp >= 273 && temp <= 323) {
+        return {
+            surface: 'textures/planets/temperate.jpg',
+            bump: 'textures/planets/temperate_bump.jpg',
+            clouds: 'textures/planets/clouds.jpg',
             shininess: 8
         };
     }
-    // Очень холодная ледяная планета
-    else if (temp < 200) {
+    
+    // Горячая планета (323-500K)
+    if (temp <= 500) {
         return {
-            surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/europa_2k.jpg',
-            bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_normal.jpg',
-            shininess: 0
+            surface: 'textures/planets/hot.jpg',
+            bump: 'textures/planets/hot_bump.jpg',
+            shininess: 12
         };
     }
-    // Холодная планета
-    else if (temp < 250) {
-        // Планета с метановой атмосферой как Титан
-        if (density > 0.4) {
-            return {
-                surface: 'https://space-facts.com/wp-content/uploads/titan-surface.jpg',
-                shininess: 1
-            };
-        } else {
-            // Ледяная луна
-            return {
-                surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/europa_2k.jpg',
-                bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_normal.jpg',
-                shininess: 0
-            };
-        }
-    }
-    // Очень горячая планета (как Венера или Меркурий)
-    else if (temp > 400) {
-        // Венероподобная планета (высокая плотность)
-        if (density > 0.7) {
-            return {
-                surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus_surface.jpg',
-                shininess: 2
-            };
-        } else {
-            // Меркуриеподобная планета (низкая плотность)
-            return {
-                surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mercury.jpg',
-                shininess: 1
-            };
-        }
-    }
-    // Горячая планета
-    else if (temp > 350) {
-        return {
-            surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus_atmosphere.jpg',
-            shininess: 5
-        };
-    }
-    // Планета, похожая на Марс (низкая температура, низкая/средняя плотность)
-    else if (temp < 270 && density < 0.8) {
-        return {
-            surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg',
-            bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_normal.jpg',
-            shininess: 5
-        };
-    }
-    // Газовый гигант (низкая плотность, большой радиус)
-    else if (density < 0.3 || radius > 2.5) {
-        // Юпитероподобная планета
-        if (radius > 5) {
-            return {
-                surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter_2k.jpg',
-                shininess: 0
-            };
-        }
-        // Сатурноподобная планета
-        else if (radius > 3) {
-            return {
-                surface: 'https://external-preview.redd.it/U8NhW4o2mflWLNbqHTXnv7nspgvLlgIZQJjJxTLKn8s.jpg?auto=webp&s=60a8fce1f844b4ffc76b30cf5d10d70a3667dc4b',
-                shininess: 0
-            };
-        }
-        // Нептуноподобная планета
-        else {
-            return {
-                surface: 'https://live.staticflickr.com/65535/48864400372_c2159b3e74_b.jpg',
-                shininess: 2
-            };
-        }
-    }
-    // Планета с вулканической активностью (высокая температура, высокая плотность)
-    else if (temp > 320 && density > 0.9) {
-        return {
-            surface: 'https://solarsystem.nasa.gov/system/resources/detail_files/2488_PIA19658_1280.jpg', // Ио
-            shininess: 7
-        };
-    }
-    // Планета по умолчанию
-    else {
-        return {
-            surface: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_1024.jpg',
-            bump: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/moon_normal.jpg',
-            shininess: 3
-        };
-    }
+    
+    // Экстремально горячая планета (>500K)
+    return {
+        surface: 'textures/planets/extreme_hot.jpg',
+        bump: 'textures/planets/extreme_hot_bump.jpg',
+        shininess: 20
+    };
 }
 
 // Определение наличия облаков
@@ -1674,10 +1612,14 @@ function getAtmosphereColor(planetData) {
     
     if (temp < 220) {
         return new THREE.Color(0x88ccff); // Холодная голубая
-    } else if (temp > 350) {
-        return new THREE.Color(0xff8866); // Горячая красно-оранжевая
-    } else {
+    } else if (temp < 273) {
+        return new THREE.Color(0xaaddff); // Прохладная голубая
+    } else if (temp <= 323) {
         return new THREE.Color(0x6699ff); // Земноподобная голубая
+    } else if (temp <= 500) {
+        return new THREE.Color(0xffaa66); // Горячая оранжевая
+    } else {
+        return new THREE.Color(0xff6666); // Экстремально горячая красная
     }
 }
 
