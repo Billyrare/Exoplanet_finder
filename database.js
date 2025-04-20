@@ -446,198 +446,170 @@ function showErrorMessage(message) {
 
 // Создание графиков для страницы базы данных
 function createDatabaseCharts(planets) {
-    createPlanetsByTypeChart(planets);
-    createHabitabilityDistributionChart(planets);
-    createRadiusVsTempChart(planets);
+    try {
+        createPlanetsByTypeChart(planets);
+        createHabitabilityDistributionChart(planets);
+        createRadiusVsTempChart(planets);
+    } catch (error) {
+        console.error('Ошибка при создании графиков:', error);
+        showErrorMessage('Не удалось создать графики визуализации данных.');
+    }
 }
 
 // График распределения планет по типам
 function createPlanetsByTypeChart(planets) {
-    const container = document.getElementById('planets-by-type-chart');
-    if (!container) return;
-    
-    // Собираем статистику по типам
+    // Подсчитываем количество планет каждого типа
     const typeCount = {};
-    
     planets.forEach(planet => {
-        const type = planet.type || 'Неизвестный тип';
-        typeCount[type] = (typeCount[type] || 0) + 1;
+        typeCount[planet.type] = (typeCount[planet.type] || 0) + 1;
     });
-    
-    const types = Object.keys(typeCount);
-    const counts = types.map(type => typeCount[type]);
-    
-    // Цвета для различных типов планет
-    const colors = [
-        '#4DB6AC', '#7986CB', '#9575CD', '#4FC3F7', 
-        '#FFD54F', '#FF8A65', '#A1887F', '#90A4AE'
-    ];
-    
+
     const data = [{
-        type: 'bar',
-        x: types,
-        y: counts,
+        values: Object.values(typeCount),
+        labels: Object.keys(typeCount),
+        type: 'pie',
+        hole: 0.4,
         marker: {
-            color: colors.slice(0, types.length),
-            line: {
-                color: '#000',
-                width: 1
-            }
+            colors: [
+                '#6C63FF', // Суперземля
+                '#4F46E5', // Землеподобная
+                '#00D1FF', // Океаническая
+                '#10B981', // Мини-Нептун
+                '#F59E0B', // Горячий Юпитер
+            ]
         }
     }];
-    
+
     const layout = {
         title: 'Распределение экзопланет по типам',
-        font: { color: '#fff' },
+        height: 400,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        xaxis: {
-            title: 'Тип планеты',
-            color: '#fff',
-            gridcolor: 'rgba(255,255,255,0.1)'
+        font: {
+            color: '#F8FAFC'
         },
-        yaxis: {
-            title: 'Количество',
-            color: '#fff',
-            gridcolor: 'rgba(255,255,255,0.1)'
-        },
-        margin: { t: 50, l: 80, r: 30, b: 100 }
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            y: -0.2
+        }
     };
-    
-    const config = { responsive: true };
-    
-    Plotly.newPlot(container, data, layout, config);
+
+    const config = {
+        responsive: true,
+        displayModeBar: false
+    };
+
+    Plotly.newPlot('planets-by-type-chart', data, layout, config);
 }
 
-// График распределения планет по обитаемости
+// График распределения по обитаемости
 function createHabitabilityDistributionChart(planets) {
-    const container = document.getElementById('habitability-distribution');
-    if (!container) return;
-    
     const habitableCount = planets.filter(p => p.potentially_habitable).length;
     const nonHabitableCount = planets.length - habitableCount;
-    
+
     const data = [{
         values: [habitableCount, nonHabitableCount],
         labels: ['Потенциально обитаемые', 'Необитаемые'],
         type: 'pie',
         marker: {
-            colors: ['#4CAF50', '#F44336'],
-            line: {
-                color: '#000',
-                width: 1
-            }
-        },
-        textinfo: 'label+percent',
-        textfont: {
-            color: '#fff'
-        },
-        hoverinfo: 'label+value+percent'
+            colors: ['#10B981', '#EF4444']
+        }
     }];
-    
+
     const layout = {
-        font: { color: '#fff' },
+        height: 300,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        margin: { t: 30, l: 30, r: 30, b: 30 }
+        font: {
+            color: '#F8FAFC'
+        },
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            y: -0.2
+        }
     };
-    
-    const config = { responsive: true };
-    
-    Plotly.newPlot(container, data, layout, config);
+
+    const config = {
+        responsive: true,
+        displayModeBar: false
+    };
+
+    Plotly.newPlot('habitability-distribution', data, layout, config);
 }
 
 // График зависимости радиуса от температуры
 function createRadiusVsTempChart(planets) {
-    const container = document.getElementById('radius-vs-temp');
-    if (!container) return;
-    
-    // Подготавливаем данные
     const habitablePlanets = planets.filter(p => p.potentially_habitable);
     const nonHabitablePlanets = planets.filter(p => !p.potentially_habitable);
-    
-    // Создаем два набора данных: для обитаемых и необитаемых планет
-    const habitableData = {
+
+    const trace1 = {
         x: habitablePlanets.map(p => p.temperature),
         y: habitablePlanets.map(p => p.radius),
         mode: 'markers',
         type: 'scatter',
         name: 'Потенциально обитаемые',
         marker: {
-            color: '#4CAF50',
             size: 10,
-            opacity: 0.7,
+            color: '#10B981',
             line: {
-                color: '#fff',
+                color: '#F8FAFC',
                 width: 1
             }
         },
-        hoverinfo: 'text',
-        text: habitablePlanets.map(p => `${p.name}<br>Радиус: ${p.radius} R⊕<br>Температура: ${p.temperature} K<br>ESI: ${p.esi.toFixed(2)}`)
+        text: habitablePlanets.map(p => p.name),
+        hovertemplate: '%{text}<br>Температура: %{x}K<br>Радиус: %{y}R⊕'
     };
-    
-    const nonHabitableData = {
+
+    const trace2 = {
         x: nonHabitablePlanets.map(p => p.temperature),
         y: nonHabitablePlanets.map(p => p.radius),
         mode: 'markers',
         type: 'scatter',
         name: 'Необитаемые',
         marker: {
-            color: '#F44336',
-            size: 8,
-            opacity: 0.5,
+            size: 10,
+            color: '#EF4444',
             line: {
-                color: '#fff',
+                color: '#F8FAFC',
                 width: 1
             }
         },
-        hoverinfo: 'text',
-        text: nonHabitablePlanets.map(p => `${p.name}<br>Радиус: ${p.radius} R⊕<br>Температура: ${p.temperature} K<br>ESI: ${p.esi.toFixed(2)}`)
+        text: nonHabitablePlanets.map(p => p.name),
+        hovertemplate: '%{text}<br>Температура: %{x}K<br>Радиус: %{y}R⊕'
     };
-    
-    // Добавляем зону обитаемости
-    const habitableZone = {
-        x: [220, 220, 320, 320, 220],
-        y: [0.5, 2, 2, 0.5, 0.5],
-        mode: 'lines',
-        type: 'scatter',
-        fill: 'toself',
-        fillcolor: 'rgba(76, 175, 80, 0.2)',
-        line: {
-            color: 'rgba(76, 175, 80, 0.8)',
-            width: 2,
-            dash: 'dash'
-        },
-        name: 'Зона обитаемости',
-        hoverinfo: 'skip'
-    };
-    
-    const data = [habitableZone, habitableData, nonHabitableData];
-    
+
     const layout = {
         title: 'Зависимость радиуса от температуры',
-        font: { color: '#fff' },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
         xaxis: {
             title: 'Температура (K)',
-            color: '#fff',
-            gridcolor: 'rgba(255,255,255,0.1)'
+            gridcolor: 'rgba(255,255,255,0.1)',
+            zerolinecolor: 'rgba(255,255,255,0.2)'
         },
         yaxis: {
             title: 'Радиус (R⊕)',
-            color: '#fff',
-            gridcolor: 'rgba(255,255,255,0.1)'
+            gridcolor: 'rgba(255,255,255,0.1)',
+            zerolinecolor: 'rgba(255,255,255,0.2)'
         },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            color: '#F8FAFC'
+        },
+        showlegend: true,
         legend: {
-            font: { color: '#fff' },
             x: 0,
             y: 1
         },
-        margin: { t: 50, l: 80, r: 30, b: 80 }
+        hovermode: 'closest'
     };
-    
-    const config = { responsive: true };
-    
-    Plotly.newPlot(container, data, layout, config);
+
+    const config = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['select2d', 'lasso2d']
+    };
+
+    Plotly.newPlot('radius-vs-temp', [trace1, trace2], layout, config);
 } 

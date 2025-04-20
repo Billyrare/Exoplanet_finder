@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Plotly зависимости -->
+    <script src="https://cdn.plot.ly/plotly-2.27.1.min.js"></script>
 </head>
 <body>
-    <div class="stars"></div>
+    <!-- Старые элементы фона удалены -->
     
     <!-- Навигационная панель -->
     <nav class="navbar">
@@ -20,9 +24,12 @@
             </div>
             <ul class="nav-links">
                 <li><a href="index.html"><i class="fas fa-home"></i> Главная</a></li>
-                <li><a href="database.html" class="active"><i class="fas fa-database"></i> База данных экзопланет</a></li>
+                <li><a href="database.html" class="active"><i class="fas fa-database"></i> База данных</a></li>
                 <li><a href="#about"><i class="fas fa-info-circle"></i> О проекте</a></li>
             </ul>
+            <div class="theme-toggle" data-tippy-content="Сменить тему">
+                <i class="fas fa-moon"></i>
+            </div>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
             </div>
@@ -87,7 +94,6 @@
                 </div>
                 
                 <div class="database-container" id="planets-database">
-                    <!-- Здесь будут динамически загружаться данные из датасета -->
                     <div id="exoplanets-list" class="exoplanets-grid"></div>
                     <div id="loading-planets" class="loading-spinner">
                         <i class="fas fa-spinner fa-spin"></i>
@@ -126,11 +132,20 @@
         </footer>
     </div>
 
-    <!-- Plotly зависимости для страницы базы данных -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="stars.js"></script>
-    <script src="interactive-bg.js"></script>
-    <script src="script.js"></script>
+    <!-- Скрипты -->
+    <script src="data.js"></script>
+    <script src="space-background.js"></script>
     <script src="database.js"></script>
+    
+    <!-- Инициализация тултипов -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <script>
+        tippy('[data-tippy-content]', {
+            theme: 'custom',
+            animation: 'scale',
+            duration: 200
+        });
+    </script>
 </body>
 </html> 

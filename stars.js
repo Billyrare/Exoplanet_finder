@@ -1,14 +1,21 @@
 // Enhanced stars background for our new theme
 document.addEventListener('DOMContentLoaded', function() {
     const starsContainer = document.querySelector('.stars');
+    const nebulaContainer = document.querySelector('.nebula-effect');
     
-    // Clear any existing stars
+    // Clear any existing stars and nebula
     while (starsContainer.firstChild) {
         starsContainer.removeChild(starsContainer.firstChild);
     }
+    while (nebulaContainer.firstChild) {
+        nebulaContainer.removeChild(nebulaContainer.firstChild);
+    }
     
     // Generate stars with better looks
-    createStars(starsContainer);
+    createStars();
+    
+    // Create nebula
+    createNebula();
     
     // Optional: Add subtle parallax effect on mouse move
     document.addEventListener('mousemove', function(e) {
@@ -20,28 +27,49 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function createStars(container) {
-    const starCount = calculateStarCount();
-    const starSizes = ['small', 'medium', 'large'];
-    const minOpacity = 0.2;
-    const maxOpacity = 0.9;
+function createStars() {
+    const starsContainer = document.querySelector('.stars');
+    const numberOfStars = 200;
     
-    // Create stars
-    for (let i = 0; i < starCount; i++) {
+    for (let i = 0; i < numberOfStars; i++) {
         const star = document.createElement('div');
-        star.classList.add('star');
+        star.className = 'star';
         
         // Random position
-        const xPos = Math.random() * 100;
-        const yPos = Math.random() * 100;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
         
-        // Random size
-        const sizeClass = starSizes[Math.floor(Math.random() * starSizes.length)];
-        star.classList.add(sizeClass);
+        // Random size (1-3px)
+        const size = Math.random() * 2 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Random twinkle animation delay
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        
+        starsContainer.appendChild(star);
+    }
+}
+
+function createNebula() {
+    const nebulaContainer = document.querySelector('.nebula-effect');
+    const numberOfParticles = 50;
+    
+    for (let i = 0; i < numberOfParticles; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'nebula-particle';
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation delay
+        particle.style.animationDelay = `${Math.random() * 15}s`;
         
         // Random opacity
-        const opacity = minOpacity + Math.random() * (maxOpacity - minOpacity);
+        particle.style.opacity = Math.random() * 0.3;
         
+        // Random color (hue from blue to purple)
         // Random twinkle animation delay
         const delay = Math.random() * 5; // 0-5s delay
         const duration = 3 + Math.random() * 5; // 3-8s duration
