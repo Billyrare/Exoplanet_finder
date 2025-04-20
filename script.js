@@ -217,7 +217,7 @@ function analyzeAllPlanetData(esiValue, params) {
     };
 }
 
-// Анализ экзопланеты по введенным параметрам
+// Функция анализа планеты
 async function analyzePlanet() {
     try {
         // Получаем элементы формы
@@ -254,13 +254,15 @@ async function analyzePlanet() {
         
         // Параметры планеты
         const params = {
-            radius,
-            temperature,
+            name: name,
+            radius: radius,
+            temperature: temperature,
             density: absoluteDensity
         };
         
         // Расчет ESI
         const esiValue = calculateESI(params);
+        console.log('ESI calculated:', esiValue);
         
         // Комплексный анализ планеты
         const analysisResults = analyzeAllPlanetData(esiValue, params);
@@ -284,17 +286,143 @@ async function analyzePlanet() {
             similarPlanets: analysisResults.similarPlanets
         };
 
+        // Создаем планету
+        createPlanetModel(result);
+        
         // Отображаем результаты
         displayResults(result);
         
         // Инициализируем графики
         initChartsVisualization(result);
 
+        // Скрываем оверлей
+        hideAnalysisOverlay();
+        
+        // Показываем секцию с результатами
+        document.getElementById('results-section').classList.remove('hidden');
+
     } catch (error) {
         console.error('Ошибка при анализе планеты:', error);
         hideAnalysisOverlay();
         alert(error.message);
     }
+}
+
+// Функция создания модели планеты
+function createPlanetModel(planetData) {
+    console.log('Creating planet model with data:', planetData);
+    
+    // Получаем текстуры для планеты
+    const textureSet = getPlanetTexture(planetData);
+    console.log('Texture set:', textureSet);
+    
+    // Создаем геометрию планеты
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    
+    // Загружаем текстуры
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Загружаем основную текстуру
+    textureLoader.load(textureSet.surface, (surfaceTexture) => {
+        // Загружаем карту неровностей
+        textureLoader.load(textureSet.bump, (bumpTexture) => {
+            // Создаем материал планеты
+            const material = new THREE.MeshPhongMaterial({
+                map: surfaceTexture,
+                bumpMap: bumpTexture,
+                bumpScale: 0.05,
+                shininess: textureSet.shininess || 10
+            });
+            
+            // Если уже есть планета, удаляем её
+            if (planet) {
+                scene.remove(planet);
+            }
+            
+            // Создаем новую планету
+            planet = new THREE.Mesh(geometry, material);
+            scene.add(planet);
+            
+            // Если нужны облака
+            if (textureSet.clouds) {
+                textureLoader.load(textureSet.clouds, (cloudsTexture) => {
+                    const cloudsGeometry = new THREE.SphereGeometry(1.01, 64, 64);
+                    const cloudsMaterial = new THREE.MeshPhongMaterial({
+                        map: cloudsTexture,
+                        transparent: true,
+                        opacity: 0.4
+                    });
+                    
+                    // Если уже есть облака, удаляем их
+                    if (clouds) {
+                        scene.remove(clouds);
+                    }
+                    
+                    // Создаем новые облака
+                    clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
+                    scene.add(clouds);
+                });
+            }
+        });
+    });
+}
+
+// Функция определения текстур планеты
+function getPlanetTexture(planetData) {
+    const temp = planetData.temperature;
+    const esi = planetData.esi;
+    
+    console.log('Selecting texture for temperature:', temp, 'ESI:', esi);
+
+    // Базовые пути к текстурам
+    const basePath = './textures/planets/';
+    let textureSet;
+
+    // Очень холодная ледяная планета (< 200K)
+    if (temp < 200) {
+        console.log('Selected: Very cold planet textures');
+        textureSet = {
+            surface: basePath + 'moon.jpg',
+            bump: basePath + 'planet_bump.jpg',
+            shininess: 15
+        };
+    }
+    // Холодная планета (200-273K)
+    else if (temp < 273) {
+        console.log('Selected: Cold planet textures');
+        textureSet = {
+            surface: basePath + 'earth2.jpg',
+            bump: basePath + 'planet_bump.jpg',
+            shininess: 5
+        };
+    }
+    // Умеренная планета (273-323K)
+    else if (temp >= 273 && temp <= 323) {
+        console.log('Selected: Temperate planet textures');
+        textureSet = {
+            surface: basePath + 'earth.jpg',
+            bump: basePath + 'planet_bump.jpg',
+            clouds: basePath + 'clouds_texture.png',
+            shininess: 8
+        };
+    }
+    // Горячая планета (>323K)
+    else {
+        console.log('Selected: Hot planet textures');
+        textureSet = {
+            surface: basePath + 'venus.jpg',
+            bump: basePath + 'planet_bump.jpg',
+            shininess: 20
+        };
+    }
+
+    // Добавляем облака только для планет с высоким ESI, если они еще не добавлены
+    if (esi >= 0.8 && !textureSet.clouds) {
+        textureSet.clouds = basePath + 'clouds_texture.png';
+    }
+
+    console.log('Final texture set:', textureSet);
+    return textureSet;
 }
 
 // Расчет состава атмосферы на основе температуры и радиуса
@@ -1385,7 +1513,7 @@ function createPlanetsDistribution(planetData) {
     Plotly.newPlot(container, [habZoneTrace, habTrace, nonHabTrace, currentPlanetTrace], layout);
 }
 
-// Инициализация 3D сцены
+// Функция инициализации 3D сцены
 function initPlanet3D() {
     const container = document.getElementById('planet-3d-container');
     if (!container) {
@@ -1430,6 +1558,12 @@ function initPlanet3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    // Центрирование рендерера в контейнере
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.left = '50%';
+    renderer.domElement.style.top = '50%';
+    renderer.domElement.style.transform = 'translate(-50%, -50%)';
     
     // Добавление рендерера в DOM
     container.appendChild(renderer.domElement);
@@ -1487,151 +1621,6 @@ function setupLighting() {
     const topLight = new THREE.DirectionalLight(0xffffff, 0.5);
     topLight.position.set(0, 5, 0);
     scene.add(topLight);
-}
-
-// Создание 3D модели планеты
-function createPlanetModel(planetData) {
-    console.log('Creating planet model with data:', planetData);
-    
-    // Проверяем и инициализируем сцену при необходимости
-    if (!scene || !camera || !renderer) {
-        console.log('3D scene not initialized, initializing...');
-        if (!initPlanet3D()) {
-            console.error('Failed to initialize 3D scene');
-            return;
-        }
-    }
-    
-    // Очистка сцены
-    while(scene.children.length > 0) { 
-        scene.remove(scene.children[0]); 
-    }
-    
-    // Настройка освещения
-    setupLighting();
-    
-    const textureLoader = new THREE.TextureLoader();
-    
-    // Функция загрузки текстуры с использованием предзагруженных текстур
-    const loadTexture = (url, fallbackColor = 0x4444ff) => {
-        return new Promise((resolve) => {
-            if (window.preloadedTextures && window.preloadedTextures[url]) {
-                console.log('Using preloaded texture:', url);
-                resolve(window.preloadedTextures[url]);
-                return;
-            }
-
-            console.log('Loading texture:', url);
-            textureLoader.load(
-                url,
-                (texture) => {
-                    texture.encoding = THREE.sRGBEncoding;
-                    resolve(texture);
-                },
-                undefined,
-                (error) => {
-                    console.warn('Error loading texture:', url, error);
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 2;
-                    canvas.height = 2;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#' + fallbackColor.toString(16).padStart(6, '0');
-                    ctx.fillRect(0, 0, 2, 2);
-                    const fallbackTexture = new THREE.CanvasTexture(canvas);
-                    resolve(fallbackTexture);
-                }
-            );
-        });
-    };
-    
-    // Определение параметров планеты
-    const dataForTexture = {
-        temperature: planetData.temperature,
-        radius: planetData.radius,
-        density: planetData.absoluteDensity || (planetData.density * EARTH_PARAMS.density),
-        esi: planetData.esi
-    };
-    
-    console.log('Planet parameters for texture selection:', dataForTexture);
-    
-    // Получение путей к текстурам
-    const planetTexture = getPlanetTexture(dataForTexture);
-    
-    // Загрузка всех текстур
-    Promise.all([
-        loadTexture(planetTexture.surface, 0x4444ff),
-        planetTexture.bump ? loadTexture(planetTexture.bump, 0x888888) : Promise.resolve(null),
-        planetTexture.clouds ? loadTexture(planetTexture.clouds, 0xffffff) : Promise.resolve(null)
-    ]).then(([surfaceMap, bumpMap, cloudsMap]) => {
-        console.log('All textures loaded successfully');
-        
-        // Создание планеты
-        const geometry = new THREE.SphereGeometry(1, 64, 64);
-        const material = new THREE.MeshPhongMaterial({
-            map: surfaceMap,
-            bumpMap: bumpMap,
-            bumpScale: 0.05,
-            shininess: planetTexture.shininess || 5,
-            specular: new THREE.Color(0x333333)
-        });
-        
-        planet = new THREE.Mesh(geometry, material);
-        planet.castShadow = true;
-        planet.receiveShadow = true;
-        planet.rotation.z = 0.4;
-        scene.add(planet);
-        
-        // Добавление облаков если они есть
-        if (cloudsMap && shouldHaveClouds(dataForTexture)) {
-            console.log('Adding clouds layer');
-            const cloudsGeometry = new THREE.SphereGeometry(1.02, 64, 64);
-            const cloudsMaterial = new THREE.MeshPhongMaterial({
-                map: cloudsMap,
-                transparent: true,
-                opacity: 0.6,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            
-            clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
-            clouds.rotation.z = 0.4;
-            scene.add(clouds);
-        }
-        
-        // Добавление атмосферы
-        const atmosphereIntensity = getAtmosphereIntensity(dataForTexture);
-        if (atmosphereIntensity > 0) {
-            console.log('Adding atmosphere with intensity:', atmosphereIntensity);
-            const atmosphereGeometry = new THREE.SphereGeometry(1.15, 64, 64);
-            const atmosphereColor = getAtmosphereColor(dataForTexture);
-            const atmosphereMaterial = new THREE.MeshPhongMaterial({
-                color: atmosphereColor,
-                transparent: true,
-                opacity: atmosphereIntensity,
-                side: THREE.BackSide,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            
-            atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-            scene.add(atmosphere);
-        }
-        
-        // Запуск анимации
-        animate();
-        
-    }).catch(error => {
-        console.error('Failed to create planet:', error);
-        // Создаем базовую сферу в случае ошибки
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
-        const material = new THREE.MeshPhongMaterial({
-            color: 0x4444ff,
-            shininess: 15
-        });
-        planet = new THREE.Mesh(geometry, material);
-        scene.add(planet);
-        animate();
-    });
 }
 
 // Анимация
@@ -1736,64 +1725,6 @@ if (typeof module !== 'undefined') {
     };
 }
 
-// Определение текстур в зависимости от параметров планеты
-function getPlanetTexture(planetData) {
-    const temp = planetData.temperature;
-    const esi = planetData.esi;
-    
-    console.log('Selecting texture for temperature:', temp, 'ESI:', esi);
-
-    // Базовые пути к текстурам
-    const basePath = './textures/planets/';
-    let textureSet;
-
-    // Очень холодная ледяная планета (< 200K)
-    if (temp < 200) {
-        console.log('Selected: Very cold planet textures');
-        textureSet = {
-            surface: basePath + 'moon.jpg',
-            bump: basePath + 'planet_bump.jpg',
-            shininess: 15
-        };
-    }
-    // Холодная планета (200-273K)
-    else if (temp < 273) {
-        console.log('Selected: Cold planet textures');
-        textureSet = {
-            surface: basePath + 'mars.jpg',
-            bump: basePath + 'planet_bump.jpg',
-            shininess: 5
-        };
-    }
-    // Умеренная планета (273-323K)
-    else if (temp >= 273 && temp <= 323) {
-        console.log('Selected: Temperate planet textures');
-        textureSet = {
-            surface: basePath + 'earth.jpg',
-            bump: basePath + 'planet_bump.jpg',
-            clouds: basePath + 'clouds_texture.png',
-            shininess: 8
-        };
-    }
-    // Горячая планета (>323K)
-    else {
-        console.log('Selected: Hot planet textures');
-        textureSet = {
-            surface: basePath + 'venus.jpg',
-            bump: basePath + 'planet_bump.jpg',
-            shininess: 20
-        };
-    }
-
-    // Добавляем облака только для планет с высоким ESI, если они еще не добавлены
-    if (esi >= 0.8 && !textureSet.clouds) {
-        textureSet.clouds = basePath + 'clouds_texture.png';
-    }
-
-    console.log('Final texture set:', textureSet);
-    return textureSet;
-}
-
 // Определение наличия облаков
 function shouldHaveClouds(planetData) {
     const temp = planetData.temperature;
@@ -1865,3 +1796,15 @@ function preloadTextures() {
         );
     });
 }
+
+// Обновляем стили контейнера
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('planet-3d-container');
+    if (container) {
+        container.style.position = 'relative';
+        container.style.display = 'flex';
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+        container.style.overflow = 'hidden';
+    }
+});
