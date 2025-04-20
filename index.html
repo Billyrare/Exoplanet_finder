@@ -13,9 +13,13 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <!-- Дополнительные компоненты Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <!-- Добавляем Tippy.js для красивых тултипов -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
 </head>
 <body>
     <div class="stars"></div>
+    <div class="nebula-effect"></div>
     
     <!-- Навигационная панель -->
     <nav class="navbar">
@@ -25,10 +29,13 @@
                 <span>ExoPlanet Analyzer</span>
             </div>
             <ul class="nav-links">
-                <li><a href="index.html" class="active"><i class="fas fa-home"></i> Главная</a></li>
-                <li><a href="database.html"><i class="fas fa-database"></i> База данных экзопланет</a></li>
-                <li><a href="#about"><i class="fas fa-info-circle"></i> О проекте</a></li>
+                <li><a href="index.html" class="active" data-tippy-content="Главная страница"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="database.html" data-tippy-content="Просмотр базы данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
+                <li><a href="#about" data-tippy-content="Информация о проекте"><i class="fas fa-info-circle"></i> О проекте</a></li>
             </ul>
+            <div class="theme-toggle" data-tippy-content="Сменить тему">
+                <i class="fas fa-moon"></i>
+            </div>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
             </div>
@@ -36,9 +43,26 @@
     </nav>
     
     <div class="container">
-        <header>
+        <header class="hero-section">
             <h1>Интеллектуальная система анализа обитаемости экзопланет</h1>
-            <p>Сравнительный анализ и выявление потенциально обитаемых экзопланет</p>
+            <p class="hero-description">Исследуйте потенциально обитаемые экзопланеты с помощью передовых алгоритмов анализа</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fas fa-globe"></i>
+                    <span class="stat-number">5000+</span>
+                    <span class="stat-label">Экзопланет в базе</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-star"></i>
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label">Точность анализа</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <span class="stat-number">10k+</span>
+                    <span class="stat-label">Пользователей</span>
+                </div>
+            </div>
         </header>
 
         <main>
@@ -47,62 +71,116 @@
                 <div class="form-container">
                     <div class="input-group">
                         <label for="planet-name">Название экзопланеты</label>
-                        <input type="text" id="planet-name" placeholder="Введите название экзопланеты">
+                        <div class="input-wrapper">
+                            <i class="fas fa-planet-ringed"></i>
+                            <input type="text" id="planet-name" placeholder="Введите название экзопланеты" data-tippy-content="Введите название исследуемой экзопланеты">
+                        </div>
                     </div>
                     <div class="input-group">
                         <label for="planet-radius">Радиус (относительно Земли)</label>
-                        <input type="number" id="planet-radius" step="0.01" placeholder="Например: 1.2">
+                        <div class="input-wrapper">
+                            <i class="fas fa-ruler"></i>
+                            <input type="number" id="planet-radius" step="0.01" placeholder="Например: 1.2" data-tippy-content="Радиус планеты относительно земного (Земля = 1.0)">
+                            <span class="unit">R⊕</span>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label for="planet-temp">Температура (К)</label>
-                        <input type="number" id="planet-temp" placeholder="Например: 288">
+                        <div class="input-wrapper">
+                            <i class="fas fa-temperature-high"></i>
+                            <input type="number" id="planet-temp" placeholder="Например: 288" data-tippy-content="Средняя температура поверхности в Кельвинах">
+                            <span class="unit">K</span>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label for="planet-density">Плотность (относительно Земли)</label>
-                        <input type="number" id="planet-density" step="0.01" min="0.01" max="3" placeholder="Например: 1.0 (Земля = 1.0)">
-                        <span class="input-hint">Земля = 1.0, Марс = 0.7, Юпитер = 0.24, Венера = 0.95</span>
+                        <div class="input-wrapper">
+                            <i class="fas fa-weight-hanging"></i>
+                            <input type="number" id="planet-density" step="0.01" min="0.01" max="3" placeholder="Например: 1.0" data-tippy-content="Плотность планеты относительно земной (Земля = 1.0)">
+                            <span class="unit">ρ⊕</span>
+                        </div>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Земля = 1.0, Марс = 0.7, Юпитер = 0.24, Венера = 0.95</span>
+                        </div>
                     </div>
-                    <button id="analyze-btn" class="glow-btn">Анализировать <i class="fas fa-search"></i></button>
+                    <button id="analyze-btn" class="glow-btn" data-tippy-content="Начать анализ экзопланеты">
+                        <span>Анализировать</span>
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </section>
 
             <section class="results-section hidden" id="results-section">
-                <h2>Результаты анализа</h2>
+                <div class="section-header">
+                    <h2>Результаты анализа</h2>
+                    <div class="actions">
+                        <button class="action-btn" data-tippy-content="Поделиться результатами">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="action-btn" data-tippy-content="Скачать отчет">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="results-container">
                     <div class="planet-card">
                         <div class="planet-visual">
                             <div id="planet-3d-container"></div>
                             <div class="planet-atmosphere"></div>
-                            <div class="planet-interaction-hint">Перетащите для вращения</div>
+                            <div class="planet-interaction-hint">
+                                <i class="fas fa-hand-pointer"></i>
+                                Перетащите для вращения
+                            </div>
                         </div>
                         <div class="planet-info">
                             <h3 id="result-name">Название планеты</h3>
-                            <p>Индекс обитаемости: <span id="habitability-index">0</span>/100</p>
-                            <div class="progress-bar">
-                                <div class="progress" id="habitability-progress"></div>
+                            <div class="habitability-score">
+                                <div class="score-label">Индекс обитаемости</div>
+                                <div class="score-value" id="habitability-index">0</div>
+                                <div class="progress-bar">
+                                    <div class="progress" id="habitability-progress"></div>
+                                </div>
                             </div>
                             <div class="planet-details">
-                                <p>Радиус: <span id="result-radius">0</span> R⊕</p>
-                                <p>Температура: <span id="result-temp">0</span> K</p>
-                                <p>Плотность: <span id="result-density">0</span> от земной</p>
+                                <div class="detail-item" data-tippy-content="Радиус планеты относительно земного">
+                                    <i class="fas fa-ruler"></i>
+                                    <span>Радиус: <strong id="result-radius">0</strong> R⊕</span>
+                                </div>
+                                <div class="detail-item" data-tippy-content="Средняя температура поверхности">
+                                    <i class="fas fa-temperature-high"></i>
+                                    <span>Температура: <strong id="result-temp">0</strong> K</span>
+                                </div>
+                                <div class="detail-item" data-tippy-content="Плотность относительно земной">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    <span>Плотность: <strong id="result-density">0</strong> ρ⊕</span>
+                                </div>
                             </div>
                             <div class="assessment">
                                 <h4>Заключение:</h4>
-                                <p id="result-assessment">Ожидание анализа...</p>
+                                <p id="result-assessment" class="assessment-text">Ожидание анализа...</p>
                             </div>
                         </div>
                     </div>
+
                     <div class="similar-planets">
-                        <h3>Похожие экзопланеты из базы данных</h3>
-                        <div id="similar-planets-list" class="planets-list">
+                        <h3>Похожие экзопланеты</h3>
+                        <div class="planets-grid" id="similar-planets-list">
                             <!-- Здесь будут динамически добавляться похожие планеты -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Отдельная карточка для рекомендаций -->
                 <div class="recommendations-card">
-                    <h3>Рекомендации</h3>
+                    <div class="card-header">
+                        <h3>Рекомендации</h3>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">Все</button>
+                            <button class="filter-btn" data-filter="important">Важные</button>
+                            <button class="filter-btn" data-filter="additional">Дополнительные</button>
+                        </div>
+                    </div>
                     <div class="recommendations">
                         <ul id="result-recommendations">
                             <!-- Здесь будут отображаться рекомендации -->
@@ -117,16 +195,16 @@
                     </div>
                     
                     <div class="charts-grid">
-                        <div class="chart-card">
+                        <div class="chart-card" data-tippy-content="Сравнение с параметрами Земли">
                             <div id="earth-comparison-chart" class="chart-container"></div>
                         </div>
-                        <div class="chart-card">
+                        <div class="chart-card" data-tippy-content="Анализ атмосферных параметров">
                             <div id="atmosphere-chart" class="chart-container"></div>
                         </div>
-                        <div class="chart-card">
+                        <div class="chart-card" data-tippy-content="Индикатор наличия воды">
                             <div id="water-indicator" class="chart-container"></div>
                         </div>
-                        <div class="chart-card">
+                        <div class="chart-card" data-tippy-content="Оценка пригодности для жизни">
                             <div id="life-sustainability-chart" class="chart-container"></div>
                         </div>
                     </div>
@@ -138,17 +216,58 @@
                     </div>
                 </div>
 
-                <button id="save-btn" class="glow-btn">Сохранить результаты <i class="fas fa-save"></i></button>
+                <div class="action-buttons">
+                    <button id="save-btn" class="glow-btn" data-tippy-content="Сохранить результаты анализа">
+                        <span>Сохранить результаты</span>
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <button id="compare-btn" class="glow-btn secondary" data-tippy-content="Сравнить с другими планетами">
+                        <span>Сравнить</span>
+                        <i class="fas fa-balance-scale"></i>
+                    </button>
+                </div>
             </section>
         </main>
 
         <footer>
-            <p>Дипломная работа "Интеллектуальная система по выявлению потенциально обитаемых экзопланет" &copy; 2023</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>О проекте</h4>
+                    <p>Дипломная работа "Интеллектуальная система по выявлению потенциально обитаемых экзопланет"</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Полезные ссылки</h4>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-book"></i> Документация</a></li>
+                        <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                        <li><a href="#"><i class="fas fa-envelope"></i> Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Социальные сети</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link" data-tippy-content="GitHub"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link" data-tippy-content="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" data-tippy-content="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ExoPlanet Analyzer. Все права защищены.</p>
+            </div>
         </footer>
     </div>
 
     <script src="stars.js"></script>
     <script src="interactive-bg.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Инициализация тултипов
+        tippy('[data-tippy-content]', {
+            theme: 'custom',
+            animation: 'scale',
+            duration: 200
+        });
+    </script>
 </body>
 </html>
