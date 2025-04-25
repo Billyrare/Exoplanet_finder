@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Kepler-442b",
+    "radius": 1.34,
+    "temperature": 233,
+    "density": 5.7,
+    "esi": 0.84,
+    "potentially_habitable": true,
+    "type": "Суперземля"
+  },
+  {
+    "name": "Proxima Centauri b",
+    "radius": 1.08,
+    "temperature": 234,
+    "density": 5.9,
+    "esi": 0.87,
+    "potentially_habitable": true,
+    "type": "Каменистая планета"
+  },
+  {
+    "name": "TRAPPIST-1e",
+    "radius": 0.92,
+    "temperature": 251,
+    "density": 5.65,
+    "esi": 0.91,
+    "potentially_habitable": true,
+    "type": "Земного типа"
+  },
+  {
+    "name": "TOI-700 d",
+    "radius": 1.19,
+    "temperature": 268,
+    "density": 5.1,
+    "esi": 0.79,
+    "potentially_habitable": true,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Kepler-186f",
+    "radius": 1.17,
+    "temperature": 188,
+    "density": 5.3,
+    "esi": 0.82,
+    "potentially_habitable": true,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Kepler-22b",
+    "radius": 2.4,
+    "temperature": 262,
+    "density": 3.8,
+    "esi": 0.71,
+    "potentially_habitable": true,
+    "type": "Суперземля"
+  },
+  {
+    "name": "K2-18b",
+    "radius": 2.6,
+    "temperature": 265,
+    "density": 3.0,
+    "esi": 0.68,
+    "potentially_habitable": true,
+    "type": "Субнептун"
+  },
+  {
+    "name": "TRAPPIST-1d",
+    "radius": 0.77,
+    "temperature": 288,
+    "density": 5.7,
+    "esi": 0.90,
+    "potentially_habitable": true,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Gliese 667 Cc",
+    "radius": 1.54,
+    "temperature": 277,
+    "density": 5.6,
+    "esi": 0.85,
+    "potentially_habitable": true,
+    "type": "Суперземля"
+  },
+  {
+    "name": "HD 40307 g",
+    "radius": 1.97,
+    "temperature": 250,
+    "density": 5.1,
+    "esi": 0.79,
+    "potentially_habitable": true,
+    "type": "Суперземля"
+  },
+  {
+    "name": "Kepler-452b",
+    "radius": 1.63,
+    "temperature": 265,
+    "density": 5.3,
+    "esi": 0.83,
+    "potentially_habitable": true,
+    "type": "Суперземля"
+  },
+  {
+    "name": "Kepler-1649c",
+    "radius": 1.06,
+    "temperature": 234,
+    "density": 5.5,
+    "esi": 0.92,
+    "potentially_habitable": true,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Venus",
+    "radius": 0.95,
+    "temperature": 737,
+    "density": 5.24,
+    "esi": 0.44,
+    "potentially_habitable": false,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Mars",
+    "radius": 0.53,
+    "temperature": 213,
+    "density": 3.93,
+    "esi": 0.64,
+    "potentially_habitable": false,
+    "type": "Земного типа"
+  },
+  {
+    "name": "Jupiter",
+    "radius": 11.2,
+    "temperature": 165,
+    "density": 1.33,
+    "esi": 0.12,
+    "potentially_habitable": false,
+    "type": "Газовый гигант"
+  },
+  {
+    "name": "55 Cancri e",
+    "radius": 1.91,
+    "temperature": 2573,
+    "density": 8.63,
+    "esi": 0.26,
+    "potentially_habitable": false,
+    "type": "Суперземля"
+  },
+  {
+    "name": "HD 189733 b",
+    "radius": 12.75,
+    "temperature": 1200,
+    "density": 0.81,
+    "esi": 0.05,
+    "potentially_habitable": false,
+    "type": "Горячий Юпитер"
+  },
+  {
+    "name": "KELT-9b",
+    "radius": 16.4,
+    "temperature": 4050,
+    "density": 0.53,
+    "esi": 0.01,
+    "potentially_habitable": false,
+    "type": "Ультрагорячий Юпитер"
+  },
+  {
+    "name": "Gliese 436 b",
+    "radius": 4.3,
+    "temperature": 712,
+    "density": 1.69,
+    "esi": 0.3,
+    "potentially_habitable": false,
+    "type": "Нептун"
+  },
+  {
+    "name": "HD 209458 b",
+    "radius": 15.6,
+    "temperature": 1450,
+    "density": 0.38,
+    "esi": 0.02,
+    "potentially_habitable": false,
+    "type": "Горячий Юпитер"
+  }
+] 
