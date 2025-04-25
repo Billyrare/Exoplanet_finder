@@ -363,6 +363,12 @@ function createPlanetModel(planetData) {
                     scene.add(clouds);
                 });
             }
+
+            // Убеждаемся, что анимация запущена
+            if (!isAnimating) {
+                isAnimating = true;
+                animate();
+            }
         });
     });
 }
@@ -1518,7 +1524,7 @@ function initPlanet3D() {
     const container = document.getElementById('planet-3d-container');
     if (!container) {
         console.error('Container for 3D planet not found');
-        return;
+        return false;
     }
 
     // Проверяем размеры контейнера
@@ -1625,22 +1631,23 @@ function setupLighting() {
 
 // Анимация
 function animate() {
-    if (!scene || !camera || !renderer) {
-        console.warn('Scene, camera or renderer not initialized');
-        return;
-    }
-
     requestAnimationFrame(animate);
     
     if (controls) {
         controls.update();
     }
     
-    if (clouds && controls.autoRotate) {
-        clouds.rotation.y += 0.0005;
+    if (planet) {
+        planet.rotation.y += 0.002;
     }
     
-    renderer.render(scene, camera);
+    if (clouds) {
+        clouds.rotation.y += 0.003;
+    }
+    
+    if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+    }
 }
 
 // Обработчик изменения размера окна
