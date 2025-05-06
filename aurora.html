@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ экзопланет</title>
+    <link rel="stylesheet" href="aurora.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="aurora-container">
+            <div class="aurora-band"></div>
+            <div class="aurora-band"></div>
+            <div class="aurora-band"></div>
+            <div class="aurora-band"></div>
+            <div class="aurora-band"></div>
+        </div>
+        
+        <div class="content">
+            <h1 class="h1--scalingSize">Анализ экзопланет</h1>
+            <p class="subtitle">Исследуйте новые миры</p>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fas fa-globe"></i>
+                    <div class="stat-number">5000+</div>
+                    <div class="stat-label">Экзопланет в базе</div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-star"></i>
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Точность анализа</div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-dna"></i>
+                    <div class="stat-number">300+</div>
+                    <div class="stat-label">Потенциально обитаемых</div>
+                </div>
+            </div>
+
+            <div class="analysis-form">
+                <h2>Анализ новой экзопланеты</h2>
+                <div class="input-group">
+                    <label for="planet-name">Название экзопланеты</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-planet-ringed"></i>
+                        <input type="text" id="planet-name" placeholder="Введите название экзопланеты">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="planet-radius">Радиус (относительно Земли)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-ruler"></i>
+                        <input type="number" id="planet-radius" step="0.01" placeholder="Например: 1.2">
+                        <span class="unit">R⊕</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="planet-temp">Температура (К)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-temperature-high"></i>
+                        <input type="number" id="planet-temp" placeholder="Например: 288">
+                        <span class="unit">K</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="planet-density">Плотность (относительно Земли)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-weight-hanging"></i>
+                        <input type="number" id="planet-density" step="0.01" placeholder="Например: 1.0">
+                        <span class="unit">ρ⊕</span>
+                    </div>
+                    <div class="input-hint">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Земля = 1.0, Марс = 0.7, Юпитер = 0.24, Венера = 0.95</span>
+                    </div>
+                </div>
+                <button class="analyze-btn">
+                    <span>Анализировать</span>
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <div class="controls">
+                <input type="checkbox" id="switch">
+                <label for="switch"><span><span class="icon">→</span> switch effect</span></label>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
