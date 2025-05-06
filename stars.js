@@ -1,7 +1,7 @@
 // Enhanced stars background for our new theme
 document.addEventListener('DOMContentLoaded', function() {
     const starsContainer = document.querySelector('.stars');
-    const nebulaContainer = document.querySelector('.nebula-effect');
+    const nebulaContainer = document.querySelector('.nebula');
     
     // Clear any existing stars and nebula
     while (starsContainer.firstChild) {
@@ -52,7 +52,7 @@ function createStars() {
 }
 
 function createNebula() {
-    const nebulaContainer = document.querySelector('.nebula-effect');
+    const nebulaContainer = document.querySelector('.nebula');
     const numberOfParticles = 50;
     
     for (let i = 0; i < numberOfParticles; i++) {
@@ -69,24 +69,8 @@ function createNebula() {
         // Random opacity
         particle.style.opacity = Math.random() * 0.3;
         
-        // Random color (hue from blue to purple)
-        // Random twinkle animation delay
-        const delay = Math.random() * 5; // 0-5s delay
-        const duration = 3 + Math.random() * 5; // 3-8s duration
-        
-        // Apply styles
-        star.style.left = `${xPos}%`;
-        star.style.top = `${yPos}%`;
-        star.style.opacity = opacity;
-        star.style.animationDelay = `${delay}s`;
-        star.style.animationDuration = `${duration}s`;
-        
-        // Add to container
-        container.appendChild(star);
+        nebulaContainer.appendChild(particle);
     }
-    
-    // Add a few special brighter stars
-    addSpecialStars(container, Math.floor(starCount * 0.03)); // 3% of total stars
 }
 
 function calculateStarCount() {

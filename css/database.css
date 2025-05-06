@@ -1,0 +1,140 @@
+.planet-item {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.planet-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.planet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.planet-header h3 {
+    margin: 0;
+    font-size: 1.4em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.planet-header h3 i {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.planet-type {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #a3e635;
+}
+
+.planet-info {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.info-row .label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+}
+
+.info-row .value {
+    font-weight: 500;
+    color: #fff;
+}
+
+.info-row .value.high-esi {
+    color: #a3e635;
+    font-weight: bold;
+}
+
+.planet-habitability {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.planet-habitability.habitable {
+    background: rgba(163, 230, 53, 0.1);
+    color: #a3e635;
+}
+
+.planet-habitability.non-habitable {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.planet-habitability i {
+    font-size: 1.1em;
+}
+
+/* Стили для сетки планет */
+#exoplanets-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .planet-item {
+        max-width: none;
+    }
+    
+    .planet-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .planet-type {
+        align-self: flex-start;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.planet-item {
+    animation: fadeIn 0.3s ease-out;
+} 

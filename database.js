@@ -1,3 +1,5 @@
+import { exoplanetsDataSet, calculateESI, isPotentiallyHabitable } from './data.js';
+
 // Глобальные переменные для страницы базы данных
 let allPlanets = [];
 let dbFilteredPlanets = [];
@@ -55,44 +57,10 @@ async function loadPlanetsData() {
     showLoadingSpinner(true);
     
     try {
-        // Проверяем доступность данных в основном скрипте
-        if (typeof exoplanetsDataSet !== 'undefined') {
-            console.log('Найден датасет в глобальной переменной exoplanetsDataSet');
-            allPlanets = exoplanetsDataSet.map(planet => ({...planet}));
-            console.log('Загружено планет из датасета:', allPlanets.length);
-            setupDatabase(allPlanets);
-        } else {
-            console.warn('Глобальная переменная exoplanetsDataSet не найдена, попытка получить данные с сервера');
-            try {
-                // Пытаемся получить данные с сервера
-                const response = await fetch('/api/exoplanets');
-                
-                if (!response.ok) {
-                    throw new Error('Сервер недоступен');
-                }
-                
-                const data = await response.json();
-                allPlanets = data;
-                setupDatabase(allPlanets);
-            } catch (error) {
-                console.error('Ошибка при загрузке данных с сервера:', error);
-                console.warn('Поиск данных в других глобальных объектах...');
-                
-                // Проверяем другие возможные местоположения данных
-                if (window.exoplanetsDataSet) {
-                    console.log('Найден датасет в window.exoplanetsDataSet');
-                    allPlanets = window.exoplanetsDataSet.map(planet => ({...planet}));
-                    setupDatabase(allPlanets);
-                } else if (window.exoplanetsData && window.exoplanetsData.length > 0) {
-                    console.log('Найден датасет в window.exoplanetsData');
-                    allPlanets = window.exoplanetsData.map(planet => ({...planet}));
-                    setupDatabase(allPlanets);
-                } else {
-                    console.error('Датасет не найден нигде!');
-                    showErrorMessage('Не удалось загрузить данные о планетах.');
-                }
-            }
-        }
+        // Используем данные из модуля
+        allPlanets = [...exoplanetsDataSet];
+        console.log('Загружено планет из датасета:', allPlanets.length);
+        setupDatabase(allPlanets);
     } catch (error) {
         console.error('Ошибка при инициализации базы данных:', error);
         showErrorMessage('Произошла ошибка при инициализации базы данных.');
@@ -127,7 +95,8 @@ function setupDatabase(planets) {
 function updateStatistics(planets) {
     const totalPlanets = document.getElementById('total-planets');
     const habitablePlanets = document.getElementById('habitable-planets');
-    const highEsiPlanets = document.getElementById('high-esi-planets');
+    const avgTemperature = document.getElementById('avg-temperature');
+    const avgRadius = document.getElementById('avg-radius');
     
     if (totalPlanets) {
         totalPlanets.textContent = planets.length;
@@ -138,9 +107,14 @@ function updateStatistics(planets) {
         habitablePlanets.textContent = count;
     }
     
-    if (highEsiPlanets) {
-        const count = planets.filter(planet => planet.esi >= 0.8).length;
-        highEsiPlanets.textContent = count;
+    if (avgTemperature) {
+        const avgTemp = planets.reduce((sum, planet) => sum + planet.temperature, 0) / planets.length;
+        avgTemperature.textContent = `${Math.round(avgTemp)} K`;
+    }
+    
+    if (avgRadius) {
+        const avgRad = planets.reduce((sum, planet) => sum + planet.radius, 0) / planets.length;
+        avgRadius.textContent = `${avgRad.toFixed(2)} R⊕`;
     }
 }
 
@@ -259,36 +233,6 @@ function updatePagination(totalItems, totalPages) {
     }
 }
 
-// Сортировка планет
-function sortPlanets(criterion) {
-    if (!dbFilteredPlanets || dbFilteredPlanets.length === 0) {
-        console.warn('Нет планет для сортировки');
-        return;
-    }
-    
-    switch (criterion) {
-        case 'esi':
-            dbFilteredPlanets.sort((a, b) => (b.esi || 0) - (a.esi || 0));
-            break;
-        case 'radius':
-            dbFilteredPlanets.sort((a, b) => (a.radius || 0) - (b.radius || 0));
-            break;
-        case 'temperature':
-            dbFilteredPlanets.sort((a, b) => (a.temperature || 0) - (b.temperature || 0));
-            break;
-        case 'name':
-        default:
-            dbFilteredPlanets.sort((a, b) => {
-                const nameA = a.name || '';
-                const nameB = b.name || '';
-                return nameA.localeCompare(nameB);
-            });
-    }
-    
-    // Отображаем первую страницу отсортированных планет
-    displayPlanetsPage(1);
-}
-
 // Инициализация элементов управления для базы данных
 function initDatabaseControls() {
     // Обработчик для поиска с кнопкой
@@ -309,8 +253,6 @@ function initDatabaseControls() {
                 filterPlanets(searchInput.value);
             }
         });
-    } else {
-        console.error('Элементы поиска не найдены');
     }
     
     // Обработчик для выбора типа фильтрации
@@ -320,8 +262,6 @@ function initDatabaseControls() {
             console.log('Изменен тип фильтрации:', this.value);
             filterPlanets(searchInput ? searchInput.value : '');
         });
-    } else {
-        console.error('Элемент выбора типа фильтрации не найден');
     }
     
     // Обработчик для сортировки
@@ -358,8 +298,6 @@ function initDatabaseControls() {
             console.log('Сортировка по:', newSort);
             sortPlanets(newSort);
         });
-    } else {
-        console.error('Элемент сортировки не найден');
     }
 }
 
@@ -374,7 +312,6 @@ function filterPlanets(searchTerm = '') {
     const selectedType = filterType ? filterType.value : 'all';
     
     console.log('Фильтрация планет. Поисковый запрос:', searchTerm, 'Тип:', selectedType);
-    console.log('Всего планет перед фильтрацией:', allPlanets.length);
     
     // Фильтруем планеты
     dbFilteredPlanets = allPlanets.filter(planet => {
@@ -414,13 +351,41 @@ function filterPlanets(searchTerm = '') {
         return nameMatch && typeMatch;
     });
     
-    console.log('Планет после фильтрации:', dbFilteredPlanets.length);
-    
     // Отображаем первую страницу отфильтрованных планет
     displayPlanetsPage(1);
     
     // Обновляем статистику
     updateStatistics(dbFilteredPlanets);
+}
+
+// Сортировка планет
+function sortPlanets(criterion) {
+    if (!dbFilteredPlanets || dbFilteredPlanets.length === 0) {
+        console.warn('Нет планет для сортировки');
+        return;
+    }
+    
+    switch (criterion) {
+        case 'esi':
+            dbFilteredPlanets.sort((a, b) => (b.esi || 0) - (a.esi || 0));
+            break;
+        case 'radius':
+            dbFilteredPlanets.sort((a, b) => (a.radius || 0) - (b.radius || 0));
+            break;
+        case 'temperature':
+            dbFilteredPlanets.sort((a, b) => (a.temperature || 0) - (b.temperature || 0));
+            break;
+        case 'name':
+        default:
+            dbFilteredPlanets.sort((a, b) => {
+                const nameA = a.name || '';
+                const nameB = b.name || '';
+                return nameA.localeCompare(nameB);
+            });
+    }
+    
+    // Отображаем первую страницу отсортированных планет
+    displayPlanetsPage(1);
 }
 
 // Вспомогательные функции

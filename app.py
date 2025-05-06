@@ -142,7 +142,6 @@ def load_datasets():
     habitable_worlds = pd.read_csv('data/cleaned_hwc_data.csv')
     
     # Создаем датасет для интерфейса из CSV файлов вместо JSON
-    # Выбираем нужные колонки из confirmed_exoplanets
     interface_planets = []
     
     # Добавляем данные из датасета подтвержденных экзопланет
@@ -152,58 +151,90 @@ def load_datasets():
             radius = planet['pl_radius_earth']
             temp = planet['pl_eqt']
             
-            # Всегда вычисляем плотность на основе радиуса, так как столбца pl_dens может не быть
-            # Примерно оцениваем плотность на основе радиуса
-            if radius < 1.5:  # Скалистые планеты
+            # Определяем тип планеты на основе радиуса
+            if radius < 1.5:
+                planet_type = "Землеподобная"
                 density = 5.0
-            elif radius < 3:  # Суперземли/мининептуны
-                density = 3.0
-            else:  # Газовые гиганты
+            elif radius < 2.5:
+                planet_type = "Суперземля"
+                density = 3.5
+            elif radius < 4:
+                planet_type = "Мини-Нептун"
+                density = 2.0
+            elif radius < 10:
+                planet_type = "Нептун"
+                density = 1.5
+            else:
+                planet_type = "Газовый гигант"
                 density = 1.0
             
             # Расчет индекса обитаемости
             habitability_score = calculate_habitability_score(radius, temp, density)
             
-            # Добавляем описание в зависимости от обитаемости
-            if habitability_score >= 80:
-                description = "Высокий потенциал обитаемости. Находится в зоне Златовласки."
-            elif habitability_score >= 60:
-                description = "Средний потенциал обитаемости. Имеет некоторые благоприятные параметры."
-            elif habitability_score >= 40:
-                description = "Низкий потенциал обитаемости. Условия могут быть экстремальными."
-            else:
-                description = "Планета, вероятно, непригодна для жизни земного типа."
+            # Определяем потенциальную обитаемость
+            potentially_habitable = (
+                temp >= 200 and temp <= 350 and  # Температура в пределах обитаемой зоны
+                radius <= 2.0 and  # Не слишком большая
+                habitability_score >= 70  # Высокий индекс обитаемости
+            )
+            
+            # Вычисляем ESI (Earth Similarity Index)
+            # ESI = (1 - abs(1 - radius)/2) * (1 - abs(288 - temp)/288)
+            esi = round((1 - abs(1 - radius)/2) * (1 - abs(288 - temp)/288), 2)
             
             interface_planets.append({
                 'name': planet['pl_name'],
                 'radius': radius,
                 'temperature': temp,
                 'density': density,
-                'habitability': habitability_score,
-                'description': description
+                'type': planet_type,
+                'potentially_habitable': potentially_habitable,
+                'esi': esi,
+                'habitability_score': habitability_score,
+                'star_type': planet['st_spectype'] if not pd.isna(planet['st_spectype']) else 'Неизвестно',
+                'orbital_period': planet['pl_orbper'] if not pd.isna(planet['pl_orbper']) else None
             })
     
     # Добавляем данные из каталога потенциально обитаемых миров
     for _, planet in habitable_worlds.iterrows():
         if not pd.isna(planet['name']) and not pd.isna(planet['radius_re']) and not pd.isna(planet['tsurf_k']):
-            radius = planet['radius_re']
-            temp = planet['tsurf_k']
-            density = 5.0  # Примерная плотность, если нет точных данных
-            
-            # Используем ESI как основу для оценки обитаемости
-            if not pd.isna(planet['esi']):
-                habitability_score = int(planet['esi'] * 100)
-            else:
-                habitability_score = calculate_habitability_score(radius, temp, density)
+            # Проверяем, не добавлена ли уже эта планета
+            if not any(p['name'] == planet['name'] for p in interface_planets):
+                radius = planet['radius_re']
+                temp = planet['tsurf_k']
                 
-            interface_planets.append({
-                'name': planet['name'],
-                'radius': radius,
-                'temperature': temp,
-                'density': density,
-                'habitability': habitability_score,
-                'description': f"Экзопланета из каталога потенциально обитаемых миров. ESI: {planet['esi'] if not pd.isna(planet['esi']) else 'Н/Д'}"
-            })
+                # Используем тип планеты из датасета или вычисляем
+                planet_type = planet['type'].split()[-1] if not pd.isna(planet['type']) else (
+                    "Землеподобная" if radius < 1.5 else
+                    "Суперземля" if radius < 2.5 else
+                    "Мини-Нептун"
+                )
+                
+                # Используем ESI из датасета
+                esi = float(planet['esi']) if not pd.isna(planet['esi']) else 0.0
+                
+                # Определяем плотность на основе типа
+                if "Terran" in planet['type']:
+                    density = 5.0
+                elif "Superterran" in planet['type']:
+                    density = 3.5
+                else:
+                    density = 2.0
+                
+                interface_planets.append({
+                    'name': planet['name'],
+                    'radius': radius,
+                    'temperature': temp,
+                    'density': density,
+                    'type': planet_type,
+                    'potentially_habitable': esi >= 0.8,
+                    'esi': esi,
+                    'habitability_score': int(esi * 100),
+                    'star_type': planet['type'].split()[0] if not pd.isna(planet['type']) else 'Неизвестно',
+                    'orbital_period': planet['period_days'] if not pd.isna(planet['period_days']) else None,
+                    'distance_ly': planet['distance_ly'] if not pd.isna(planet['distance_ly']) else None,
+                    'age_gy': planet['age_gy'] if not pd.isna(planet['age_gy']) else None
+                })
     
     return confirmed_exoplanets, habitable_worlds, interface_planets
 

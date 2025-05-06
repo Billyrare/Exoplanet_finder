@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>База данных экзопланет</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/database.css">
+    <link rel="stylesheet" href="css/database-page.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Three.js -->
@@ -14,223 +16,6 @@
     <!-- Добавляем Tippy.js для красивых тултипов -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
-    <style>
-        .database-section {
-            background: rgba(2, 6, 23, 0.7);
-            border-radius: 1rem;
-            padding: 2rem;
-            margin: 2rem 0;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-
-        .database-intro {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .database-intro h2 {
-            color: var(--light);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .search-panel {
-            display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            align-items: center;
-        }
-
-        .search-panel input,
-        .search-panel select {
-            background: rgba(2, 6, 23, 0.5);
-            border: 1px solid var(--primary);
-            color: var(--light);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-panel input:focus,
-        .search-panel select:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        .search-panel button {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--light);
-            border: 1px solid var(--primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .search-panel button:hover {
-            background: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .database-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: rgba(99, 102, 241, 0.1);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card i {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        .stat-info span {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--light);
-            display: block;
-        }
-
-        .stat-info p {
-            color: var(--light);
-            opacity: 0.8;
-            margin: 0;
-        }
-
-        .exoplanets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .planet-card {
-            background: rgba(2, 6, 23, 0.5);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .planet-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-color: var(--primary);
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .pagination button {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--light);
-            border: 1px solid var(--primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination button:not(:disabled):hover {
-            background: var(--primary);
-        }
-
-        #page-info {
-            color: var(--light);
-            font-size: 1rem;
-        }
-
-        .loading-spinner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding: 2rem;
-            color: var(--light);
-        }
-
-        .loading-spinner i {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        .visualization-section {
-            margin-top: 3rem;
-        }
-
-        .charts-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .chart-card {
-            background: rgba(2, 6, 23, 0.5);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-
-        .chart-card.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .chart-card h3 {
-            color: var(--light);
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-        }
-
-        @media (max-width: 768px) {
-            .search-panel {
-                grid-template-columns: 1fr;
-            }
-            
-            .database-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Анимация загрузки -->
@@ -253,7 +38,7 @@
             </div>
             <ul class="nav-links">
                 <li><a href="index.html" data-tippy-content="Главная страница"><i class="fas fa-home"></i> Главная</a></li>
-                <li><a href="database.html" class="active" data-tippy-content="Просмотр базы данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
+                <li><a href="database.html" class="active" data-tippy-content="База данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
                 <li><a href="apod.html" data-tippy-content="Астрономическое изображение дня NASA"><i class="fas fa-star"></i> APOD NASA</a></li>
                 <li><a href="about.html" data-tippy-content="Информация о проекте"><i class="fas fa-info-circle"></i> О проекте</a></li>
             </ul>
@@ -275,52 +60,74 @@
         <main>
             <section class="database-section">
                 <div class="database-intro">
-                    <h2>Каталог экзопланет</h2>
-                    <p>В этом разделе представлена база данных известных экзопланет с их основными параметрами. Используйте фильтры для поиска конкретных планет или сортируйте список по различным параметрам.</p>
-                </div>
-                
-                <div class="search-panel">
-                    <input type="text" id="db-search" placeholder="Поиск по названию планеты..." data-tippy-content="Введите название планеты для поиска">
-                    <select id="filter-type" data-tippy-content="Выберите тип планет для отображения">
-                        <option value="all">Все планеты</option>
-                        <option value="habitable">Потенциально обитаемые</option>
-                        <option value="non-habitable">Необитаемые</option>
-                        <option value="earth-like">Землеподобные</option>
-                        <option value="super-earth">Суперземли</option>
-                        <option value="gas-giant">Газовые гиганты</option>
-                    </select>
-                    <button id="db-search-btn" data-tippy-content="Начать поиск">
-                        <i class="fas fa-search"></i>
-                        Поиск
-                    </button>
-                    <button id="sort-btn" class="sort-btn" data-sort="name" data-tippy-content="Изменить порядок сортировки">
-                        <i class="fas fa-sort"></i>
-                        По имени
-                    </button>
+                    <h2>База данных экзопланет</h2>
+                    <p>Исследуйте каталог известных экзопланет и их характеристики</p>
                 </div>
                 
                 <div class="database-stats">
-                    <div class="stat-card" data-tippy-content="Общее количество экзопланет в базе данных">
+                    <div class="stat-card">
                         <i class="fas fa-globe"></i>
                         <div class="stat-info">
                             <span id="total-planets">0</span>
                             <p>Всего планет</p>
                         </div>
                     </div>
-                    <div class="stat-card" data-tippy-content="Количество потенциально обитаемых планет">
-                        <i class="fas fa-leaf"></i>
+                    <div class="stat-card">
+                        <i class="fas fa-dna"></i>
                         <div class="stat-info">
                             <span id="habitable-planets">0</span>
                             <p>Потенциально обитаемые</p>
                         </div>
                     </div>
-                    <div class="stat-card" data-tippy-content="Планеты с высоким индексом подобия Земле">
-                        <i class="fas fa-star"></i>
+                    <div class="stat-card">
+                        <i class="fas fa-temperature-high"></i>
                         <div class="stat-info">
-                            <span id="high-esi-planets">0</span>
-                            <p>Высокий индекс ESI</p>
+                            <span id="avg-temperature">0 K</span>
+                            <p>Средняя температура</p>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <i class="fas fa-ruler"></i>
+                        <div class="stat-info">
+                            <span id="avg-radius">0 R⊕</span>
+                            <p>Средний радиус</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visualization-section">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Распределение по типам</h3>
+                            <div id="planets-by-type-chart" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Распределение по обитаемости</h3>
+                            <div id="habitability-distribution" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card full-width">
+                            <h3>Зависимость радиуса от температуры</h3>
+                            <div id="radius-vs-temp" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-panel">
+                    <input type="text" id="db-search" placeholder="Поиск по названию или типу планеты..." data-tippy-content="Введите название или тип планеты">
+                    <select id="filter-type" data-tippy-content="Выберите фильтр">
+                        <option value="all">Все планеты</option>
+                        <option value="habitable">Только обитаемые</option>
+                        <option value="non-habitable">Только необитаемые</option>
+                        <option value="earth-like">Землеподобные</option>
+                        <option value="super-earth">Суперземли</option>
+                        <option value="gas-giant">Газовые гиганты</option>
+                    </select>
+                    <button id="sort-btn" data-sort="name" data-tippy-content="Изменить сортировку">
+                        <i class="fas fa-sort"></i> По имени
+                    </button>
+                    <button id="db-search-btn" data-tippy-content="Начать поиск">
+                        <i class="fas fa-search"></i> Поиск
+                    </button>
                 </div>
                 
                 <div class="database-container" id="planets-database">
@@ -332,31 +139,13 @@
                 </div>
                 
                 <div class="pagination">
-                    <button id="prev-page" disabled data-tippy-content="Перейти к предыдущей странице">
-                        <i class="fas fa-chevron-left"></i> Предыдущая
+                    <button id="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i> Назад
                     </button>
-                    <div id="page-info">Страница 1 из 1</div>
-                    <button id="next-page" disabled data-tippy-content="Перейти к следующей странице">
-                        Следующая <i class="fas fa-chevron-right"></i>
+                    <span id="page-info">Страница 1 из 1</span>
+                    <button id="next-page" disabled>
+                        Вперед <i class="fas fa-chevron-right"></i>
                     </button>
-                </div>
-            </section>
-            
-            <section class="visualization-section">
-                <h2>Визуализация данных</h2>
-                <div class="charts-container">
-                    <div class="chart-card full-width">
-                        <h3>Распределение экзопланет по типам</h3>
-                        <div id="planets-by-type-chart" class="chart-container"></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Распределение по обитаемости</h3>
-                        <div id="habitability-distribution" class="chart-container"></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Зависимость радиуса от температуры</h3>
-                        <div id="radius-vs-temp" class="chart-container"></div>
-                    </div>
                 </div>
             </section>
         </main>
@@ -392,10 +181,11 @@
     </div>
 
     <!-- Скрипты -->
-    <script src="data.js"></script>
-    <script src="space-background.js"></script>
-    <script src="stars.js"></script>
-    <script src="database.js"></script>
+    <script src="js/constants.js" type="module"></script>
+    <script src="js/data.js" type="module"></script>
+    <script src="js/space-background.js" type="module"></script>
+    <script src="js/stars.js" type="module"></script>
+    <script src="js/database.js" type="module"></script>
     
     <script>
         // Инициализация тултипов
