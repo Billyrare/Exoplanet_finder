@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О проекте | ExoPlanet Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <style>
+        .about-section {
+            background: rgba(2, 6, 23, 0.7);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .about-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .about-header h2 {
+            color: var(--light);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .about-card {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .about-card h3 {
+            color: var(--light);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .about-card h3 i {
+            color: var(--primary);
+        }
+
+        .about-card p {
+            color: var(--light);
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .tech-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .tech-item {
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light);
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            background: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .tech-item i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .tech-item:hover i {
+            color: var(--light);
+        }
+
+        .author-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 1rem;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .author-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            padding: 5px;
+        }
+
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-info h3 {
+            color: var(--light);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .author-info p {
+            color: var(--light);
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .contact-link {
+            color: var(--light);
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .contact-link:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .metric-card {
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .metric-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .metric-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--light);
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-list {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Анимация загрузки -->
+    <div class="loading-screen">
+        <span class="loader"></span>
+    </div>
+
+    <!-- Фоновые эффекты -->
+    <div class="space-bg"></div>
+    <div class="grid-overlay"></div>
+    <div class="stars"></div>
+    <div class="nebula"></div>
+    
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-globe-americas"></i>
+                <span>ExoPlanet Analyzer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" data-tippy-content="Главная страница"><i class="fas fa-home"></i> Главная</a></li>
+                <li><a href="database.html" data-tippy-content="Просмотр базы данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
+                <li><a href="apod.html" data-tippy-content="Астрономическое изображение дня NASA"><i class="fas fa-star"></i> APOD NASA</a></li>
+                <li><a href="about.html" class="active" data-tippy-content="Информация о проекте"><i class="fas fa-info-circle"></i> О проекте</a></li>
+            </ul>
+            <div class="theme-toggle" data-tippy-content="Сменить тему">
+                <i class="fas fa-moon"></i>
+            </div>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header class="hero-section">
+            <h1>О проекте</h1>
+            <p class="hero-description">Интеллектуальная система по выявлению потенциально обитаемых экзопланет</p>
+        </header>
+
+        <main>
+            <section class="about-section">
+                <div class="about-header">
+                    <h2>Дипломный проект</h2>
+                    <p>Система анализа и визуализации данных об экзопланетах с использованием современных технологий</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <i class="fas fa-code"></i>
+                        <div class="metric-number">15,000+</div>
+                        <div class="metric-label">Строк кода</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fas fa-database"></i>
+                        <div class="metric-number">5,000+</div>
+                        <div class="metric-label">Экзопланет в базе</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="metric-number">95%</div>
+                        <div class="metric-label">Точность анализа</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fas fa-globe"></i>
+                        <div class="metric-number">300+</div>
+                        <div class="metric-label">Потенциально обитаемых</div>
+                    </div>
+                </div>
+
+                <div class="about-grid">
+                    <div class="about-card">
+                        <h3><i class="fas fa-rocket"></i> Цели проекта</h3>
+                        <p>Разработка интеллектуальной системы для анализа и оценки потенциальной обитаемости экзопланет на основе их физических параметров.</p>
+                        <p>Создание удобного интерфейса для визуализации и исследования данных об экзопланетах.</p>
+                    </div>
+                    <div class="about-card">
+                        <h3><i class="fas fa-brain"></i> Возможности системы</h3>
+                        <p>• Анализ физических параметров экзопланет</p>
+                        <p>• Расчет индекса подобия Земле (ESI)</p>
+                        <p>• Визуализация данных в реальном времени</p>
+                        <p>• Интеграция с NASA APOD API</p>
+                    </div>
+                    <div class="about-card">
+                        <h3><i class="fas fa-cogs"></i> Технологии</h3>
+                        <p>Проект разработан с использованием современного стека технологий:</p>
+                        <div class="tech-list">
+                            <div class="tech-item">
+                                <i class="fab fa-python"></i>
+                                <span>Python</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fab fa-js"></i>
+                                <span>JavaScript</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fab fa-html5"></i>
+                                <span>HTML5</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fab fa-css3-alt"></i>
+                                <span>CSS3</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fas fa-database"></i>
+                                <span>CSV/JSON</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Plotly.js</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fas fa-cube"></i>
+                                <span>Three.js</span>
+                            </div>
+                            <div class="tech-item">
+                                <i class="fas fa-server"></i>
+                                <span>Flask</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="author-section">
+                    <div class="author-avatar">
+                        <img src="https://avatars.githubusercontent.com/u/default" alt="Автор проекта">
+                    </div>
+                    <div class="author-info">
+                        <h3>Исамиддинов Ботир Бахтиер угли</h3>
+                        <p>Студент группы 121731</p>
+                        <p>Белорусский государственный университет информатики и радиоэлектроники</p>
+                        <div class="contact-links">
+                            <a href="#" class="contact-link" data-tippy-content="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="contact-link" data-tippy-content="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="contact-link" data-tippy-content="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>О проекте</h4>
+                    <p>Дипломная работа "Интеллектуальная система по выявлению потенциально обитаемых экзопланет"</p>
+                    <p>Выполнил: студент группы 121731 Исамиддинов Ботир Бахтиер угли</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Полезные ссылки</h4>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-book"></i> Документация</a></li>
+                        <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                        <li><a href="#"><i class="fas fa-envelope"></i> Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Социальные сети</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link" data-tippy-content="GitHub"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link" data-tippy-content="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" data-tippy-content="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ExoPlanet Analyzer. Все права защищены.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="space-background.js"></script>
+    <script src="stars.js"></script>
+    
+    <script>
+        // Инициализация тултипов
+        tippy('[data-tippy-content]', {
+            theme: 'custom',
+            animation: 'scale',
+            duration: 200
+        });
+
+        // Мобильное меню
+        document.querySelector('.menu-toggle').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Переключение темы
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const icon = document.querySelector('.theme-toggle i');
+            if (document.body.classList.contains('dark-theme')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Скрипт для анимации загрузки
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.querySelector('.loading-screen');
+            
+            setTimeout(() => {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 

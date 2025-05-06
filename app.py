@@ -256,6 +256,10 @@ NASA_API_KEY = 'saVWS1h87SYncOcqjgMxZsPDSznkfHMZhnznvs1s'  # Используе�
 def index():
     return app.send_static_file('index.html')
 
+@app.route('/about.html')
+def about():
+    return app.send_static_file('about.html')
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze_planet():
     data = request.json
