@@ -42,8 +42,24 @@ body {
     overflow-x: hidden;
 }
 
-/* Фоновые эффекты */
+/* Космический фон */
 .space-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: 
+        radial-gradient(1px 1px at 25px 25px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 50px 50px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(2px 2px at 125px 125px, white, rgba(255, 255, 255, 0)),
+        radial-gradient(2px 2px at 75px 75px, white, rgba(255, 255, 255, 0));
+    background-size: 200px 200px;
+    animation: space-drift 100s linear infinite;
+}
+
+.nebula {
     position: fixed;
     top: 0;
     left: 0;
@@ -54,9 +70,352 @@ body {
         radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
-    opacity: 0.8;
+    filter: blur(30px);
+    animation: nebula-drift 30s ease-in-out infinite alternate;
 }
 
+/* Анимация загрузки */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--darker);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s;
+}
+
+.loading-screen.fade-out {
+    opacity: 0;
+}
+
+.loader {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 6rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.loader:before,
+.loader:after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    animation: pulsOut 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 1rem rgba(99, 102, 241, 0.75));
+}
+
+.loader:before {
+    width: 100%;
+    padding-bottom: 100%;
+    box-shadow: inset 0 0 0 1rem var(--primary);
+    animation-name: pulsIn;
+}
+
+.loader:after {
+    width: calc(100% - 2rem);
+    padding-bottom: calc(100% - 2rem);
+    box-shadow: 0 0 0 0 var(--primary);
+}
+
+@keyframes pulsIn {
+    0% {
+        box-shadow: inset 0 0 0 1rem var(--primary);
+        opacity: 1;
+    }
+    50%, 100% {
+        box-shadow: inset 0 0 0 0 var(--primary);
+        opacity: 0;
+    }
+}
+
+@keyframes pulsOut {
+    0%, 50% {
+        box-shadow: 0 0 0 0 var(--primary);
+        opacity: 0;
+    }
+    100% {
+        box-shadow: 0 0 0 1rem var(--primary);
+        opacity: 1;
+    }
+}
+
+.content {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content .planet {
+    width: 65%;
+    height: 65%;
+    background-color: var(--primary);
+    border-radius: 100%;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    transform-origin: center center;
+    box-shadow: inset 2px -10px 0px rgba(0, 0, 0, 0.1);
+    animation: planet 5s ease infinite alternate;
+}
+
+.content .planet .ring {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 100%;
+    background-color: var(--light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: 33% center;
+    box-shadow: 2px -10px 0px rgba(0, 0, 0, 0.1),
+        inset -5px -10px 0px rgba(0, 0, 0, 0.1);
+    animation: ring 3s ease infinite;
+}
+
+.content .planet .ring:before {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 30px;
+    border-radius: 100%;
+    background-color: var(--secondary);
+    z-index: 2;
+    left: calc(0px - 5px);
+    box-shadow: inset -3px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+.content .planet .ring:after {
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 100%;
+    background-color: var(--secondary);
+    box-shadow: inset 2px -10px 0px rgba(0, 0, 0, 0.1);
+}
+
+.content .planet .cover-ring {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    border-bottom-left-radius: 80%;
+    border-bottom-right-radius: 80%;
+    border-top-left-radius: 100px;
+    border-top-right-radius: 100px;
+    transform: translate(0px, -17px);
+    background-color: var(--primary);
+    z-index: 2;
+    box-shadow: inset 0px -2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.content .planet .spots {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    z-index: 2;
+}
+
+.content .planet .spots span {
+    width: 30px;
+    height: 30px;
+    background-color: var(--darker);
+    position: absolute;
+    border-radius: 100%;
+    box-shadow: inset -2px 3px 0px rgba(0, 0, 0, 0.3);
+    animation: dots 5s ease infinite alternate;
+}
+
+.content .planet .spots span:nth-child(1) { top: 20px; right: 50px; }
+.content .planet .spots span:nth-child(2) { top: 40px; left: 50px; width: 15px; height: 15px; }
+.content .planet .spots span:nth-child(3) { top: 80px; left: 20px; width: 25px; height: 25px; }
+.content .planet .spots span:nth-child(4) { top: 80px; left: 90px; width: 40px; height: 40px; }
+.content .planet .spots span:nth-child(5) { top: 160px; left: 70px; width: 15px; height: 15px; }
+.content .planet .spots span:nth-child(6) { top: 165px; left: 125px; width: 10px; height: 10px; }
+.content .planet .spots span:nth-child(7) { top: 90px; left: 150px; width: 15px; height: 15px; }
+
+.content p {
+    color: var(--light);
+    font-size: 14px;
+    z-index: 2;
+    position: absolute;
+    bottom: -20px;
+    font-family: "Roboto Mono", monospace;
+    animation: text 4s ease infinite;
+    width: 100px;
+    text-align: center;
+}
+
+@keyframes planet {
+    0% { transform: rotate(10deg); }
+    100% { transform: rotate(-10deg); }
+}
+
+@keyframes ring {
+    0% { transform: rotateX(110deg) rotateZ(0deg) translate(-50px, 5px); }
+    100% { transform: rotateX(110deg) rotateZ(360deg) translate(-50px, 5px); }
+}
+
+@keyframes dots {
+    0% { box-shadow: inset -3px 3px 0px rgba(0, 0, 0, 0.3); }
+    100% { box-shadow: inset 3px 3px 0px rgba(0, 0, 0, 0.3); }
+}
+
+@keyframes text {
+    0% {
+        transform: translateX(-30px);
+        letter-spacing: 0px;
+        color: var(--light);
+    }
+    25% {
+        letter-spacing: 3px;
+        color: var(--secondary);
+    }
+    50% {
+        transform: translateX(30px);
+        letter-spacing: 0px;
+        color: var(--light);
+    }
+    75% {
+        letter-spacing: 3px;
+        color: var(--secondary);
+    }
+    100% {
+        transform: translateX(-30px);
+        letter-spacing: 0px;
+        color: var(--light);
+    }
+}
+
+/* Анимации */
+@keyframes space-drift {
+    from { background-position: 0 0; }
+    to { background-position: 200px 200px; }
+}
+
+@keyframes nebula-drift {
+    0% { transform: scale(1) translate(0, 0); }
+    50% { transform: scale(1.1) translate(-2%, 2%); }
+    100% { transform: scale(1) translate(0, 0); }
+}
+
+@keyframes planet-glow {
+    0% {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 50px rgba(99, 102, 241, 0.8);
+    }
+}
+
+@keyframes orbit-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Улучшенные стили контейнеров */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+}
+
+.card {
+    background: var(--dark-glass);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: var(--border-light);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow);
+}
+
+/* Улучшенные стили форм */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem;
+    background: var(--light-glass);
+    border: var(--border-light);
+    border-radius: 0.5rem;
+    color: var(--light);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Улучшенные кнопки */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--neon-gradient);
+    color: var(--light);
+    box-shadow: var(--neon-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+}
+
+/* Улучшенные заголовки */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--light);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 2.5rem;
+    background: var(--neon-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: var(--text-glow);
+}
+
+/* Фоновые эффекты */
 .grid-overlay {
     position: fixed;
     top: 0;
@@ -93,22 +452,6 @@ body {
     animation: twinkle 5s ease-in-out infinite alternate;
 }
 
-.nebula {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -3;
-    background: 
-        radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 70% 50%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.2) 0%, transparent 50%);
-    filter: blur(60px);
-    opacity: 0.4;
-    animation: nebulaPulse 10s ease-in-out infinite alternate;
-}
-
 /* Анимации */
 @keyframes gridMove {
     0% { transform: translateY(0); }
@@ -118,11 +461,6 @@ body {
 @keyframes twinkle {
     0% { opacity: 0.5; }
     100% { opacity: 0.8; }
-}
-
-@keyframes nebulaPulse {
-    0% { transform: scale(1); opacity: 0.4; }
-    100% { transform: scale(1.1); opacity: 0.6; }
 }
 
 /* Стили для Three.js канваса */

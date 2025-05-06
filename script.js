@@ -537,14 +537,7 @@ function calculateSimilarityScores(params) {
             const similarity = (1 - Math.abs(params[param] - EARTH_PARAMS[param]) / 
                               (params[param] + EARTH_PARAMS[param]));
             
-            // Переводим названия параметров на русский
-            const paramNames = {
-                'radius': 'Радиус',
-                'temperature': 'Температура',
-                'density': 'Плотность'
-            };
-            
-            scores[paramNames[param] || param] = Math.round(similarity * 100 * 100) / 100;
+            scores[param] = Math.round(similarity * 100 * 100) / 100;
         }
     }
     return scores;

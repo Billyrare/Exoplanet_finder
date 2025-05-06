@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Астрономическое изображение дня NASA</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .apod-page {
+            min-height: 100vh;
+            background: var(--darker);
+            padding: 2rem 1rem;
+        }
+
+        /* Стили для навигационной панели */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            z-index: 1000;
+            padding: 0.5rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .logo i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a i {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .theme-toggle,
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .menu-toggle {
+            display: none;
+        }
+
+        /* Адаптивность навигации */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(2, 6, 23, 0.95);
+                padding: 1rem;
+                border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            }
+        }
+
+        /* Отступ для контента под фиксированной навигацией */
+        .apod-header {
+            margin-top: 4rem;
+        }
+
+        .apod-title {
+            font-size: 2.5rem;
+            color: var(--light);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls-container {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .date-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .date-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--light);
+            border: 1px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .date-input {
+            background: rgba(2, 6, 23, 0.5);
+            border: 1px solid var(--primary);
+            color: var(--light);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .date-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(2, 6, 23, 0.7);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .media-container {
+            position: relative;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .apod-image {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+
+        .apod-image:hover {
+            transform: scale(1.02);
+        }
+
+        .apod-video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border: none;
+        }
+
+        .info-container {
+            padding: 2rem;
+        }
+
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .info-title {
+            color: var(--light);
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .info-date {
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        .info-explanation {
+            color: var(--light);
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .loading-container {
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .error-container {
+            padding: 2rem;
+            text-align: center;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 0.5rem;
+            margin: 2rem;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 1.1rem;
+        }
+
+        .language-switch,
+        .language-btn {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .apod-title {
+                font-size: 2rem;
+            }
+
+            .info-container {
+                padding: 1.5rem;
+            }
+
+            .info-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .info-title {
+                font-size: 1.5rem;
+            }
+
+            .controls-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Анимация загрузки -->
+    <div class="loading-screen">
+        <span class="loader"></span>
+    </div>
+
+    <div class="apod-page">
+        <!-- Навигационная панель -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-globe-americas"></i>
+                    <span>ExoPlanet Analyzer</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html" data-tippy-content="Главная страница"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="database.html" data-tippy-content="Просмотр базы данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
+                    <li><a href="apod.html" class="active" data-tippy-content="Астрономическое изображение дня NASA"><i class="fas fa-star"></i> APOD NASA</a></li>
+                    <li><a href="aurora.html" data-tippy-content="Информация о полярных сияниях"><i class="fas fa-meteor"></i> Полярные сияния</a></li>
+                    <li><a href="#about" data-tippy-content="Информация о проекте"><i class="fas fa-info-circle"></i> О проекте</a></li>
+                </ul>
+                <div class="theme-toggle" data-tippy-content="Сменить тему">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <header class="apod-header">
+            <h1 class="apod-title">Астрономическое изображение дня NASA</h1>
+        </header>
+
+        <div class="controls-container">
+            <div class="date-controls">
+                <div class="quick-nav">
+                    <button class="date-btn" onclick="changeDate('prev')">
+                        <i class="fas fa-chevron-left"></i> Предыдущий день
+                    </button>
+                    <button class="date-btn" onclick="changeDate('next')">
+                        Следующий день <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="date-selector">
+                    <input type="date" id="datePicker" class="date-input" onchange="loadAPOD(this.value)">
+                    <button class="date-btn" onclick="loadAPOD(document.getElementById('datePicker').value)">
+                        <i class="fas fa-search"></i> Показать
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <main class="content-container">
+            <div id="apodContent">
+                <!-- Здесь будет отображаться контент APOD -->
+                <div class="loading-container">
+                    <span class="loader"></span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function loadAPOD(date) {
+            const apodContent = document.getElementById('apodContent');
+            apodContent.innerHTML = '<div class="loading-container"><span class="loader"></span></div>';
+
+            try {
+                const response = await fetch(`/api/nasa/apod?date=${date}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    let mediaContent = '';
+                    if (data.media_type === 'image') {
+                        mediaContent = `
+                            <div class="media-container">
+                                <img src="${data.url}" alt="${data.title}" class="apod-image">
+                            </div>`;
+                    } else if (data.media_type === 'video') {
+                        mediaContent = `
+                            <div class="media-container">
+                                <iframe class="apod-video" src="${data.url}" frameborder="0" allowfullscreen></iframe>
+                            </div>`;
+                    }
+
+                    apodContent.innerHTML = `
+                        ${mediaContent}
+                        <div class="info-container">
+                            <div class="info-header">
+                                <h2 class="info-title">${data.title}</h2>
+                                <div class="info-date">${formatDate(date)}</div>
+                            </div>
+                            <p class="info-explanation">${data.explanation}</p>
+                        </div>
+                    `;
+                } else {
+                    const today = new Date();
+                    const selectedDate = new Date(date);
+                    
+                    if (selectedDate > today) {
+                        apodContent.innerHTML = `
+                            <div class="error-container" style="background: rgba(99, 102, 241, 0.1); padding: 3rem; text-align: center; border-radius: 1rem;">
+                                <i class="fas fa-clock" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                                <h2 style="color: var(--light); margin: 1rem 0;">Изображение пока недоступно</h2>
+                                <p style="color: var(--light); opacity: 0.8;">Изображение для выбранной даты ${formatDate(date)} еще не опубликовано. Пожалуйста, выберите более раннюю дату.</p>
+                            </div>`;
+                    } else {
+                        apodContent.innerHTML = `
+                            <div class="error-container">
+                                <p class="error-message">Ошибка загрузки данных: ${data.error || 'Не удалось загрузить данные'}</p>
+                            </div>`;
+                    }
+                }
+            } catch (error) {
+                apodContent.innerHTML = `
+                    <div class="error-container">
+                        <p class="error-message">Ошибка загрузки данных: ${error.message}</p>
+                    </div>`;
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function changeDate(direction) {
+            const datePicker = document.getElementById('datePicker');
+            const currentDate = new Date(datePicker.value);
+            
+            if (direction === 'prev') {
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            datePicker.value = currentDate.toISOString().split('T')[0];
+            loadAPOD(datePicker.value);
+        }
+
+        // Установка вчерашней даты при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            document.getElementById('datePicker').value = yesterdayStr;
+            loadAPOD(yesterdayStr);
+            
+            // Скрыть экран загрузки
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'none';
+            }, 1000);
+        });
+
+        // Мобильное меню
+        document.querySelector('.menu-toggle').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Переключение темы
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const icon = document.querySelector('.theme-toggle i');
+            if (document.body.classList.contains('dark-theme')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Инициализация тултипов
+        tippy('[data-tippy-content]', {
+            theme: 'custom',
+            animation: 'scale'
+        });
+    </script>
+</body>
+</html> 

@@ -6,8 +6,94 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestClassifier
 import os
+import requests
+from datetime import datetime
+from functools import lru_cache
+from dotenv import load_dotenv
+
+# Загружаем переменные окружения из .env файла
+load_dotenv()
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+
+# Глобальные переменные для модели и токенизатора
+translator_model = None
+translator_tokenizer = None
+
+def init_translator():
+    """Инициализация модели и токенизатора для перевода"""
+    global translator_model, translator_tokenizer
+    
+    print("Инициализация модели перевода...")
+    try:
+        # Загружаем модель и токенизатор
+        model_name = "Helsinki-NLP/opus-mt-en-ru"
+        translator_tokenizer = AutoTokenizer.from_pretrained(model_name)
+        translator_model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        print("Модель перевода успешно загружена")
+        return True
+    except Exception as e:
+        print(f"Ошибка при загрузке модели перевода: {str(e)}")
+        return False
+
+# Инициализируем модель при запуске приложения
+if not init_translator():
+    print("ВНИМАНИЕ: Модель перевода не загружена. Перевод будет недоступен.")
+
+@lru_cache(maxsize=1000)
+def translate_text(text, target_lang='ru'):
+    """
+    Переводит текст с использованием модели Hugging Face.
+    Кэширует результаты для оптимизации.
+    """
+    try:
+        if target_lang == 'en':
+            return text
+
+        global translator_model, translator_tokenizer
+        
+        # Проверяем, инициализирована ли модель
+        if translator_model is None or translator_tokenizer is None:
+            if not init_translator():
+                print("Не удалось инициализировать модель перевода")
+                return text
+
+        print(f"Начинаем перевод текста длиной {len(text)} символов...")
+
+        try:
+            # Разбиваем текст на предложения для лучшего перевода
+            sentences = text.split('. ')
+            translated_sentences = []
+
+            for sentence in sentences:
+                if not sentence.strip():
+                    continue
+                    
+                # Токенизация
+                inputs = translator_tokenizer(sentence, return_tensors="pt", max_length=512, truncation=True)
+                
+                # Перевод
+                with torch.no_grad():
+                    translated = translator_model.generate(**inputs, max_length=512)
+                
+                # Декодирование результата
+                translated_text = translator_tokenizer.decode(translated[0], skip_special_tokens=True)
+                translated_sentences.append(translated_text)
+
+            # Объединяем все предложения
+            final_translation = '. '.join(translated_sentences)
+            print(f"Успешный перевод. Результат: {final_translation[:100]}...")
+            return final_translation
+
+        except Exception as api_error:
+            print(f"Ошибка при переводе: {str(api_error)}")
+            print(f"Тип ошибки: {api_error.__class__.__name__}")
+            return text
+            
+    except Exception as e:
+        print(f"Общая ошибка перевода: {str(e)}")
+        print(f"Тип ошибки: {e.__class__.__name__}")
+        return text
 
 # Вспомогательные функции
 def calculate_habitability_score(radius, temperature, density):
@@ -161,6 +247,9 @@ def prepare_models(confirmed_exoplanets, habitable_worlds):
 # Загрузка данных и подготовка моделей
 confirmed_exoplanets, habitable_worlds, exoplanets_json = load_datasets()
 knn_model, rf_model, scaler_esi = prepare_models(confirmed_exoplanets, habitable_worlds)
+
+# Добавляем конфигурацию NASA API
+NASA_API_KEY = 'saVWS1h87SYncOcqjgMxZsPDSznkfHMZhnznvs1s'  # Используем демо-ключ для тестирования
 
 # Маршруты Flask
 @app.route('/')
@@ -363,6 +452,55 @@ def get_assessment(esi, habitability_score):
         assessment += f" Индекс подобия Земле (ESI) низкий ({esi:.2f}), планета значительно отличается от Земли."
     
     return assessment
+
+# Обновляем маршрут APOD
+@app.route('/api/nasa/apod')
+def get_nasa_apod():
+    try:
+        print("\n=== New request to APOD API ===")
+        date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+        
+        print(f"Requested parameters: date={date}")
+        
+        # Проверяем валидность даты
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({
+                'error': 'Invalid date format. Use YYYY-MM-DD format'
+            }), 400
+            
+        # Делаем запрос к NASA API
+        print("Sending request to NASA API...")
+        response = requests.get('https://api.nasa.gov/planetary/apod', params={
+            'api_key': NASA_API_KEY,
+            'date': date
+        })
+        
+        # Проверяем статус ответа
+        if response.status_code != 200:
+            error_msg = response.json().get('error', {}).get('message', 'Unknown error')
+            return jsonify({
+                'error': f'NASA API Error: {error_msg}',
+                'status_code': response.status_code
+            }), response.status_code
+
+        data = response.json()
+        print("Sending response to client")
+        return jsonify(data)
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {str(e)}")
+        return jsonify({
+            'error': 'Error getting data from NASA API',
+            'details': str(e)
+        }), 500
+    except Exception as e:
+        print(f"General error: {str(e)}")
+        return jsonify({
+            'error': 'Internal server error',
+            'details': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

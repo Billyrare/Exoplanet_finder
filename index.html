@@ -18,6 +18,11 @@
     <script src="https://unpkg.com/tippy.js@6"></script>
 </head>
 <body>
+    <!-- Анимация загрузки -->
+    <div class="loading-screen">
+        <span class="loader"></span>
+    </div>
+
     <div class="space-bg"></div>
     <div class="grid-overlay"></div>
     <div class="stars"></div>
@@ -60,6 +65,8 @@
             <ul class="nav-links">
                 <li><a href="index.html" class="active" data-tippy-content="Главная страница"><i class="fas fa-home"></i> Главная</a></li>
                 <li><a href="database.html" data-tippy-content="Просмотр базы данных экзопланет"><i class="fas fa-database"></i> База данных</a></li>
+                <li><a href="apod.html" data-tippy-content="Астрономическое изображение дня NASA"><i class="fas fa-star"></i> APOD NASA</a></li>
+                <li><a href="aurora.html" data-tippy-content="Информация о полярных сияниях"><i class="fas fa-meteor"></i> Полярные сияния</a></li>
                 <li><a href="#about" data-tippy-content="Информация о проекте"><i class="fas fa-info-circle"></i> О проекте</a></li>
             </ul>
             <div class="theme-toggle" data-tippy-content="Сменить тему">
@@ -296,6 +303,19 @@
             theme: 'custom',
             animation: 'scale',
             duration: 200
+        });
+
+        // Скрипт для анимации загрузки
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.querySelector('.loading-screen');
+            
+            // Имитация загрузки
+            setTimeout(() => {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 2000);
         });
     </script>
 </body>
